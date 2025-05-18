@@ -1,0 +1,20 @@
+
+body {
+  margin: 0;
+  font-family:  'Roboto', 'Oxygen', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Estilos responsivos  */
+@media (max-width: 600px) {
+  .MuiPaper-root {
+    margin: 16px;
+    padding: 24px 16px !important;
+  }
+}
+
+/*botones */
+.MuiButton-root {
+  transition: all 0.3s ease-in-out !important;
+}

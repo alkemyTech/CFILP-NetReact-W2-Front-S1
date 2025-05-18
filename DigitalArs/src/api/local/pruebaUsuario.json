@@ -1,0 +1,19 @@
+
+[
+    {
+      "id": 1,
+      "email": "UsuarioAdmin@prueba.com",
+      "password": "1234",
+      "name": "UsuarioAdmin",
+      "saldo": 15000.00,
+      "rol": "Administrador"
+    },
+    {
+      "id": 2,
+      "email":"usuario1@prueba.com" ,
+      "password": "4321",
+      "name": "Usuario1prueba",
+      "saldo": 50000.00,
+      "rol": "Usuario"
+    }
+  ]
