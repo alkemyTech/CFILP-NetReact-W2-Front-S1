@@ -11,22 +11,17 @@ import {
   TableRow,
   IconButton,
   Button,
-  Grid
+  Grid,
+  Avatar
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
+import { theme } from "../utils/theme";
 
-const theme = createTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-    secondary: { main: '#dc004e' },
-  },
-});
-
-const PanelControl = () => {
+const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -38,7 +33,7 @@ const PanelControl = () => {
   const obtenerUsuarios = async () => {
     try {
       const response = await axios.get("https://localhost:7097/Usuario");
-      setUsuarios(response.data);
+      setUsuarios(response.data ?? []);
     } catch (err) {
       console.error("Error al obtener usuarios:", err);
       setError("Error al cargar los usuarios.");
@@ -58,24 +53,34 @@ const PanelControl = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: 'auto' }}>
-          <Typography variant="h5" gutterBottom>
-            Panel de Administración
-          </Typography>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
+            <Grid item>
+              <Avatar sx={{ width: 56, height: 56 }}>U</Avatar>
+            </Grid>
+            <Grid item xs>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                Usuarios
+              </Typography>
+              <Typography variant="subtitle2" color="text.secondary">
+                Gestión de usuarios
+              </Typography>
+            </Grid>
+          </Grid>
 
           {error ? (
-            <Typography color="error">{error}</Typography>
+            <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
           ) : (
             <>
               <TableContainer component={Paper} sx={{ marginY: 2 }}>
                 <Table>
-                  <TableHead>
+                  <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
                     <TableRow>
-                      <TableCell>DNI</TableCell>
-                      <TableCell>Nombre</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Roles</TableCell>
-                      <TableCell>Acciones</TableCell>
+                      <TableCell><strong>DNI</strong></TableCell>
+                      <TableCell><strong>Nombre</strong></TableCell>
+                      <TableCell><strong>Email</strong></TableCell>
+                      <TableCell><strong>Roles</strong></TableCell>
+                      <TableCell><strong>Acciones</strong></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -86,14 +91,16 @@ const PanelControl = () => {
                           <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
                           <TableCell>{usuario.email}</TableCell>
                           <TableCell>
-                            {usuario.roles?.length > 0
-                              ? usuario.roles.map(r => r.nombre).join(", ")
-                              : "Sin roles"}
+                            {usuario.roles?.$values?.length > 0
+                              ? usuario.roles.$values.map(r => r.nombre).join(", ")
+                              : "Sin roles"
+                            }
                           </TableCell>
                           <TableCell>
                             <IconButton
                               color="error"
                               onClick={() => eliminarUsuario(usuario.dni)}
+                              aria-label="Eliminar usuario"
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -102,17 +109,18 @@ const PanelControl = () => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5}>No hay usuarios para mostrar.</TableCell>
+                        <TableCell colSpan={5} align="center">
+                          No hay usuarios para mostrar.
+                        </TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
               </TableContainer>
 
-              <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                <Grid item xs={12} sm={6}>
+              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }}>
+                <Grid item>
                   <Button
-                    fullWidth
                     variant="outlined"
                     color="secondary"
                     size="large"
@@ -132,4 +140,4 @@ const PanelControl = () => {
   );
 };
 
-export default PanelControl;
+export default Usuarios;

@@ -1,28 +1,18 @@
-import usuario from '@local/pruebaUsuario.json'; // Usando el alias correcto
-
 const API_BASE_URL = 'https://localhost:7097/';
 
+import axios from 'axios';
+
 export const login = async (email, password) => {
-  try {
-    const response = await axios("https://localhost:7097/Token/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Credenciales incorrectas");
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
+  const url = `${API_BASE_URL}Token/login`;
+  const response = await axios.post(url, null, {
+    params: { email, password }
+  });
+  return response.data;
 };
 
 export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  localStorage.removeItem('idTipo');
   return Promise.resolve({ success: true });
 };

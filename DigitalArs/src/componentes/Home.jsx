@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../servicios/authService';
+import SavingsIcon from '@mui/icons-material/Savings';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
 import {
   Button,
   Typography,
@@ -9,26 +12,26 @@ import {
   Grid,
   Avatar,
 } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-const theme = createTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-    secondary: { main: '#dc004e' },
-  },
-});
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from '../utils/theme';
+import { formatearARS } from '../utils/format';
+import { logout } from '../servicios/authService';
 
 const Home = ({ user }) => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
-  // Normalizar roles y cuentas desde estructura .NET
-  const roles = user?.roles?.$values ?? [];
-  const cuentas = user?.cuentas?.$values ?? [];
+  if (!user) return null;
 
-  const esAdmin = roles.includes('Administrador');
-  const nombreCompleto = `${user?.nombre ?? ''} ${user?.apellido ?? ''}`.trim();
+  const roles = useMemo(() => user?.roles ?? [], [user]);
+  const cuentas = useMemo(() => user?.cuentas ?? [], [user]);
+  const esAdmin = useMemo(() => roles.includes('Administrador'), [roles]);
+  const nombreCompleto = useMemo(
+    () => `${user?.nombre ?? ''} ${user?.apellido ?? ''}`.trim(),
+    [user]
+  );
   const email = user?.email ?? 'Correo no disponible';
-  const saldo = cuentas[0]?.saldo ?? 0;
+  const saldo = useMemo(() => cuentas[0]?.saldo ?? 0, [cuentas]);
 
   const handleLogout = () => {
     logout();
@@ -36,20 +39,16 @@ const Home = ({ user }) => {
   };
 
   const handleTransferencia = () => {
-    localStorage.setItem('idTipo', '2');
-    navigate('/transferencia');
+    navigate('/transferencia', { state: { idTipo: 2 } });
   };
 
   const handleDeposito = () => {
-    localStorage.setItem('idTipo', '1');
-    navigate('/deposito');
+    navigate('/deposito', { state: { idTipo: 1 } });
   };
 
-  const handlePanel = () => {
+  const handleAdmin = () => {
     if (esAdmin) {
-      navigate('/panelControl');
-    } else {
-      alert('No disponés de autoridad suficiente');
+      navigate('/administrar');
     }
   };
 
@@ -58,71 +57,82 @@ const Home = ({ user }) => {
       <Box sx={{ padding: 3 }}>
         <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: 'auto' }}>
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-            <Grid item>
+            <Grid>
               <Avatar sx={{ width: 56, height: 56 }}>
                 {user?.nombre?.charAt(0).toUpperCase() || 'U'}
               </Avatar>
             </Grid>
-            <Grid item xs>
+            <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{nombreCompleto}</Typography>
-              <Typography variant="subtitle1" color="textSecondary">{email}</Typography>
-              <Typography variant="subtitle2" color="textSecondary">
+              <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
+              <Typography variant="subtitle2" color="text.secondary">
                 {roles.length > 0 ? roles.join(', ') : 'Sin roles'}
               </Typography>
             </Grid>
-            <Grid item>
-              <Button variant="contained" color="secondary" onClick={handleLogout}>
+            <Grid>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleLogout}
+                aria-label="Cerrar sesión"
+              >
                 Cerrar sesión
               </Button>
             </Grid>
           </Grid>
 
-          <Paper elevation={2} sx={{ padding: 3, marginBottom: 3, backgroundColor: '#f5f5f5' }}>
+          <Paper
+            elevation={2}
+            sx={{ padding: 3, marginBottom: 3, backgroundColor: '#f5f5f5' }}
+          >
             <Typography variant="h6" gutterBottom>Saldo actual</Typography>
             <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              ${saldo.toLocaleString('es-AR')}
+              {formatearARS(saldo)}
             </Typography>
           </Paper>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                onClick={handleTransferencia}
-                sx={{ height: '100px' }}
-              >
-                Transferir
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
+          <Box
+            display="grid"
+            gridTemplateColumns={{ xs: '1fr', sm: 'repeat(3, 1fr)' }}
+            gap={2}
+          >
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              startIcon={<TransferWithinAStationIcon />}
+              onClick={handleTransferencia}
+              sx={{ height: '100px' }}
+              aria-label="Transferencia"
+            >
+              Transferir
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              size="large"
+              startIcon={<SavingsIcon />}
+              onClick={handleDeposito}
+              sx={{ height: '100px' }}
+              aria-label="Inversión"
+            >
+              Invertir
+            </Button>
+            {esAdmin && (
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 size="large"
-                onClick={handleDeposito}
+                startIcon={<AdminPanelSettingsIcon />}
+                onClick={handleAdmin}
                 sx={{ height: '100px' }}
+                aria-label="Panel de administración"
               >
-                Invertir
+                Administrar
               </Button>
-            </Grid>
-            {esAdmin && (
-              <Grid item xs={12} sm={6}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={handlePanel}
-                  sx={{ height: '100px' }}
-                >
-                  Administrar
-                </Button>
-              </Grid>
             )}
-          </Grid>
+          </Box>
         </Paper>
       </Box>
     </ThemeProvider>
