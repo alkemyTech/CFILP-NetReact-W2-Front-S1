@@ -1,3 +1,4 @@
+// En App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -5,11 +6,10 @@ import Home from './componentes/Home';
 import LoginForm from './componentes/LoginForm';
 import { PrivateRoute } from './componentes/PrivateRoute';
 import Transferencia from './componentes/Transferencia';
-import Deposito from './componentes/Deposito';
+import PlazoFijo from './componentes/PlazoFijo';
 import Administrar from './componentes/Administrar';
-import Usuarios from './componentes/Usuarios';
-import Cuentas from './componentes/Cuentas';
-import Transacciones from './componentes/Transacciones';
+
+
 
 const theme = createTheme({
   palette: {
@@ -23,7 +23,7 @@ const theme = createTheme({
 });
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // Nuevo estado para la lista de usuarios
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -38,6 +38,40 @@ function App() {
     }
   }, []);
 
+  // useEffect(() => {
+  //   const storedUsuariosData = localStorage.getItem('usuarios_data');
+  //   if (storedUsuariosData) {
+  //     const data = JSON.parse(storedUsuariosData);
+  //     if (Array.isArray(data)) { // Verifica si data es un array
+  //       setUser(data);
+  //       const usuarioGuardado = localStorage.getItem('usuario');
+  //       if (usuarioGuardado) {
+  //         const datosUsuario = JSON.parse(usuarioGuardado);
+  //         const usuarioEncontrado = data.find(u => u.id === datosUsuario.id);
+  //         if (usuarioEncontrado) {
+  //           setUsuario(usuarioEncontrado);
+  //           setSaldo(usuarioEncontrado.saldo);
+  //         }
+  //       }
+  //     } else {
+  //       // Manejar el caso en que data no es un array (opcional: puedes inicializar con un array vacío o mostrar un error)
+  //       console.warn("localStorage 'usuarios_data' no contiene un array válido:", data);
+  //       setUser([]);
+  //     }
+  //   } else {
+  //     setUser(user);
+  //     const usuarioGuardado = localStorage.getItem('user');
+  //     if (usuarioGuardado) {
+  //       const datosUsuario = JSON.parse(usuarioGuardado);
+  //       const usuarioEncontrado = user.find(u => u.dni === datosUsuario.dni);
+  //       if (usuarioEncontrado) {
+  //         setUser(usuarioEncontrado);
+
+  //       }
+  //     }
+  //   }
+  // }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -51,6 +85,7 @@ function App() {
               </PrivateRoute>
             }
           />
+
           <Route
             path="/transferencia"
             element={
@@ -60,10 +95,10 @@ function App() {
             }
           />
           <Route
-            path="/deposito"
+            path="/PlazoFijo"
             element={
               <PrivateRoute>
-                <Deposito user={user} />
+                <PlazoFijo user={user} />
               </PrivateRoute>
             }
           />
@@ -72,30 +107,6 @@ function App() {
             element={
               <PrivateRoute>
                 <Administrar user={user} />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/usuarios"
-            element={
-              <PrivateRoute>
-                <Usuarios />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/cuentas"
-            element={
-              <PrivateRoute>
-                <Cuentas />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/transacciones"
-            element={
-              <PrivateRoute>
-                <Transacciones />
               </PrivateRoute>
             }
           />

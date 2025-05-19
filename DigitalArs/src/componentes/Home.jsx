@@ -21,15 +21,11 @@ const Home = ({ user }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  if (!user) return null;
-
-  const roles = useMemo(() => user?.roles ?? [], [user]);
-  const cuentas = useMemo(() => user?.cuentas ?? [], [user]);
+  // Los hooks deben estar fuera de cualquier condicional
+  const cuentas = useMemo(() => user?.cuentas?.$values ?? [], [user]);
+  const roles = useMemo(() => user?.roles?.$values?.map(r => r.nombre) ?? [], [user]);
   const esAdmin = useMemo(() => roles.includes('Administrador'), [roles]);
-  const nombreCompleto = useMemo(
-    () => `${user?.nombre ?? ''} ${user?.apellido ?? ''}`.trim(),
-    [user]
-  );
+  const nombreCompleto = useMemo(() => `${user?.nombre ?? ''} ${user?.apellido ?? ''}`.trim(), [user]);
   const email = user?.email ?? 'Correo no disponible';
   const saldo = useMemo(() => cuentas[0]?.saldo ?? 0, [cuentas]);
 
@@ -42,8 +38,8 @@ const Home = ({ user }) => {
     navigate('/transferencia', { state: { idTipo: 2 } });
   };
 
-  const handleDeposito = () => {
-    navigate('/deposito', { state: { idTipo: 1 } });
+  const handlePlazoFijo = () => {
+    navigate('/PlazoFijo', { state: { idTipo: 1 } });
   };
 
   const handleAdmin = () => {
@@ -51,6 +47,15 @@ const Home = ({ user }) => {
       navigate('/administrar');
     }
   };
+
+  // Si el usuario no está, mostramos mensaje de carga
+  if (!user) {
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 5 }}>
+        Cargando datos de usuario...
+      </Typography>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -90,6 +95,7 @@ const Home = ({ user }) => {
               {formatearARS(saldo)}
             </Typography>
           </Paper>
+
           <Box
             display="grid"
             gridTemplateColumns={{ xs: '1fr', sm: 'repeat(3, 1fr)' }}
@@ -112,7 +118,7 @@ const Home = ({ user }) => {
               color="primary"
               size="large"
               startIcon={<SavingsIcon />}
-              onClick={handleDeposito}
+              onClick={handlePlazoFijo}
               sx={{ height: '100px' }}
               aria-label="Inversión"
             >

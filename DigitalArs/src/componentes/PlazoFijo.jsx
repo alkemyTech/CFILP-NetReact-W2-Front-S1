@@ -4,7 +4,6 @@ import {
 import { useState, useEffect } from "react";
 import { CheckCircle } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import userData from "../api/local/pruebaUsuario.json";
 
 const actualizarUsuarios = (usuariosActualizados) => {
   localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));

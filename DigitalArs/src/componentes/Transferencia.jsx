@@ -65,7 +65,7 @@ const Transferencia = ({ user, saldo: propSaldo, setSaldo }) => {
   useEffect(() => {
     axios
       .get("https://localhost:7097/Cuenta")
-      .then((res) => setCuentas(res.data || []))
+      .then((res) => setCuentas(res.data?.$values || []))
       .catch(() => setMensaje("Error al cargar cuentas destino."));
   }, []);
 
