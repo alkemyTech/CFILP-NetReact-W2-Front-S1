@@ -55,10 +55,10 @@ const Usuarios = () => {
       <Box sx={{ padding: 3 }}>
         <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-            <Grid item>
+            <Grid item xs={1}>
               <Avatar sx={{ width: 56, height: 56 }}>U</Avatar>
             </Grid>
-            <Grid item xs>
+            <Grid item xs={11}>
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                 Usuarios
               </Typography>
@@ -91,8 +91,8 @@ const Usuarios = () => {
                           <TableCell>{usuario.nombre} {usuario.apellido}</TableCell>
                           <TableCell>{usuario.email}</TableCell>
                           <TableCell>
-                            {usuario.roles?.$values?.length > 0
-                              ? usuario.roles.$values.map(r => r.nombre).join(", ")
+                            {usuario.roles?.length > 0
+                              ? usuario.roles.map(r => r.nombre).join(", ")
                               : "Sin roles"
                             }
                           </TableCell>
@@ -118,8 +118,8 @@ const Usuarios = () => {
                 </Table>
               </TableContainer>
 
-              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }}>
-                <Grid item>
+              <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                <Grid item xs={2}>
                   <Button
                     variant="outlined"
                     color="secondary"
@@ -138,6 +138,8 @@ const Usuarios = () => {
       </Box>
     </ThemeProvider>
   );
+
+
 };
 
 export default Usuarios;

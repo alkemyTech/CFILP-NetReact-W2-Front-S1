@@ -21,8 +21,11 @@ import { CheckCircle } from "@mui/icons-material";
 import axios from "axios";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "../utils/theme";
+import { useContext } from "react";
+import { AuthContext } from "../servicios/AuthContext";
 
-const Transferencia = ({ user, saldo: propSaldo, setSaldo }) => {
+const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const idTipo = location.state?.idTipo;
@@ -65,7 +68,7 @@ const Transferencia = ({ user, saldo: propSaldo, setSaldo }) => {
   useEffect(() => {
     axios
       .get("https://localhost:7097/Cuenta")
-      .then((res) => setCuentas(res.data?.$values || []))
+      .then((res) => setCuentas(res.data || []))
       .catch(() => setMensaje("Error al cargar cuentas destino."));
   }, []);
 
@@ -131,13 +134,14 @@ const Transferencia = ({ user, saldo: propSaldo, setSaldo }) => {
       setMensaje("");
       setDatosUsuarioDestino({ dni: "", nombre: "", apellido: "" });
 
-      // Actualizar saldo
+      // Actualizar saldo local
       setSaldoDisponible((prev) => prev - montoTransferido);
       if (setSaldo) setSaldo((prev) => prev - montoTransferido);
 
+      // Redirigir con señal para refrescar saldo real
       setTimeout(() => {
         setOpenDialog(false);
-        navigate("/home");
+        navigate("/home", { state: { refreshUser: true } }); // <-- cambio aquí
       }, 1500);
     } catch (error) {
       console.error("Error al transferir:", error);
