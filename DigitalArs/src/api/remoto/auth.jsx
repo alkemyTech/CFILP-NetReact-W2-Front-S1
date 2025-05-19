@@ -1,7 +1,7 @@
 // src/api/remote/auth.js
 import axios from 'axios';
 
-const API_URL = 'https://tu-api.com/auth';//cambiar por la api cuando este lista
+const API_URL = 'https://localhost:7097'; //cambiar por la api cuando este lista
 
 export const login = async (email, password) => {
   const response = await axios.post('/api/login', { email, password });
@@ -10,7 +10,7 @@ export const login = async (email, password) => {
 
 export const getDemoUsers = async () => {
   try {
-    const response = await axios.get(`${API_URL}/demo-users`);
+    const response = await axios.get(`${API_URL}/Token/login`);
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, error: 'Error al obtener usuarios demo' };

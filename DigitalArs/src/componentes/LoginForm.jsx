@@ -1,5 +1,60 @@
-// En LoginForm.jsx
-import React, { useState, useEffect } from "react";
+// // En LoginForm.jsx
+// import React, { useState, useEffect } from "react";
+// import {
+  // TextField,
+  // Button,
+  // Box,
+  // Typography,
+  // Paper,
+  // InputAdornment,
+  // IconButton,
+  // useTheme,
+  // useMediaQuery,
+// } from "@mui/material";
+// import { Visibility, VisibilityOff } from "@mui/icons-material";
+// import { login } from "../servicios/authService";
+// import { useNavigate } from "react-router-dom";
+
+// const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [error, setError] = useState("");
+//   const [usuarios, setUsuarios] = useState([]);
+
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+//   const navigate = useNavigate();
+
+//   const handleSubmit = async (e) => {
+//   e.preventDefault();
+//   setError("");
+
+//   if (!email || !password) {
+//     setError("Por favor completá todos los campos.");
+//     return;
+//   }
+
+//   try {
+//     const result = await login(email, password);
+//     if (result.success && result.data?.token) {
+//       localStorage.setItem("authToken", result.data.token);
+//       localStorage.setItem("usuario", JSON.stringify(result.data.user));
+
+//       setUsuario(result.data.user);
+//       setSaldo(result.data.user.saldo);
+
+//       navigate("/home", { replace: true });
+//     } else {
+//       setError("Credenciales inválidas");
+//     }
+//   } catch (err) {
+//     setError(err?.message || err?.error || "Error al iniciar sesión");
+//   }
+// };
+
+import React, { useState } from 'react';
+import axios from 'axios';
 import {
   TextField,
   Button,
@@ -9,62 +64,60 @@ import {
   InputAdornment,
   IconButton,
   useTheme,
-  useMediaQuery,
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { login, getUsuario } from "../servicios/authService";
+  useMediaQuery
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 
-const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LoginForm = ({ setUser }) => {
+  const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [usuarios, setUsuarios] = useState([]);
-
+  const [error, setError] = useState('');
+  const [token, setToken] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadUsuario = async () => {
-      const result = await getUsuario();
-      if (result.success) {
-        setUsuarios(result.data);
-      }
-    };
-    loadUsuario();
-  }, []);
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+   const handleLogin = async (e) => {
+    e.preventDefault();
 
-  try {
-    const result = await login(email, password);
-    if (result.success) {
-      console.log("Usuario autenticado:", result.data.user);
-      localStorage.setItem("authToken", result.data.token);
-      localStorage.setItem("usuario", JSON.stringify(result.data.user));
+    try {
+      const response = await axios.post(
+        'https://localhost:7097/Token/login',
+        null,
+        {
+          params: {
+            email: form.email,
+            password: form.password
+          }
+        }
+      );
 
-      // *** LOG 1: Verifica qué devuelve getUsuario ***
-      const usuariosResult = await getUsuario();
-      console.log("Resultado de getUsuario en LoginForm:", usuariosResult);
+      const { token, user } = response.data; // asumimos que `usuario` es el objeto devuelto
+      setToken(token);
+      setError('');
 
-      if (usuariosResult.success && usuariosResult.data) {
-        localStorage.setItem('usuarios_data', JSON.stringify(usuariosResult.data));
-        setUsuariosData(usuariosResult.data);
-      }
+      // Guardar en localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      setUsuario(result.data.user);
-      setSaldo(result.data.user.saldo);
+      // Actualizar estado global
+      setUser(user);
 
-      navigate("/home", { replace: true });
+      console.log('Datos:', user);
+
+      navigate("/Home");
+
+    } catch (err) {
+      setError('Credenciales inválidas');
+      setToken('');
+      console.error(err);
     }
-  } catch (err) {
-    setError(err.error || "Error al iniciar sesión");
-  }
-};
+  };
 
   return (
     <Box
@@ -74,7 +127,7 @@ const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
         alignItems: "center",
         minHeight: "100vh",
         p: isMobile ? 1 : 3,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#f5f5f5"
       }}
     >
       <Paper
@@ -84,7 +137,7 @@ const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
           width: "100%",
           maxWidth: isMobile ? "90%" : "450px",
           borderRadius: 2,
-          boxSizing: "border-box",
+          boxSizing: "border-box"
         }}
       >
         <Typography
@@ -92,48 +145,40 @@ const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
           component="h1"
           gutterBottom
           align="center"
-          sx={{
-            mb: 4,
-            fontSize: isMobile ? "1.5rem" : "2.125rem",
-          }}
+          sx={{ mb: 4 }}
         >
           Billetera virtual
         </Typography>
 
         {error && (
-          <Typography
-            color="error"
-            align="center"
-            sx={{
-              mb: 2,
-              fontSize: isMobile ? "0.875rem" : "1rem",
-            }}
-          >
+          <Typography color="error" align="center" sx={{ mb: 2 }}>
             {error}
           </Typography>
         )}
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleLogin}>
           <TextField
             label="Email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
             variant="outlined"
             fullWidth
             margin="normal"
             size={isMobile ? "small" : "medium"}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             sx={{ mb: 2 }}
           />
 
           <TextField
             label="Contraseña"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             fullWidth
             margin="normal"
             size={isMobile ? "small" : "medium"}
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -142,14 +187,10 @@ const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
                     edge="end"
                     size={isMobile ? "small" : "medium"}
                   >
-                    {showPassword ? (
-                      <VisibilityOff fontSize={isMobile ? "small" : "medium"} />
-                    ) : (
-                      <Visibility fontSize={isMobile ? "small" : "medium"} />
-                    )}
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
-              ),
+              )
             }}
             sx={{ mb: 3 }}
           />
@@ -161,7 +202,7 @@ const LoginForm = ({ setUsuario, setSaldo, setUsuariosData }) => {
             size={isMobile ? "medium" : "large"}
             sx={{
               py: isMobile ? 1 : 1.5,
-              fontSize: isMobile ? "0.875rem" : "1rem",
+              fontSize: isMobile ? "0.875rem" : "1rem"
             }}
           >
             Iniciar Sesión

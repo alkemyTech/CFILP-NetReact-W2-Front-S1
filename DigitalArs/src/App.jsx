@@ -7,7 +7,7 @@ import LoginForm from './componentes/LoginForm';
 import { PrivateRoute } from './componentes/PrivateRoute';
 import Transferencia from './componentes/Transferencia';
 import Deposito from './componentes/Deposito';
-import userData from './api/local/pruebaUsuario.json'; // Importa el JSON para la carga inicial si localStorage está vacío
+import PanelControl from './componentes/panelControl';
 
 const theme = createTheme({
   palette: {
@@ -21,66 +21,74 @@ const theme = createTheme({
 });
 
 function App() {
-  const [usuario, setUsuario] = useState(null);
-  const [saldo, setSaldo] = useState(0);
-  const [usuariosData, setUsuariosData] = useState([]); // Nuevo estado para la lista de usuarios
+  const [user, setUser] = useState(null); // Nuevo estado para la lista de usuarios
 
-useEffect(() => {
-  const storedUsuariosData = localStorage.getItem('usuarios_data');
-  if (storedUsuariosData) {
-    const data = JSON.parse(storedUsuariosData);
-    if (Array.isArray(data)) { // Verifica si data es un array
-      setUsuariosData(data);
-      const usuarioGuardado = localStorage.getItem('usuario');
-      if (usuarioGuardado) {
-        const datosUsuario = JSON.parse(usuarioGuardado);
-        const usuarioEncontrado = data.find(u => u.id === datosUsuario.id);
-        if (usuarioEncontrado) {
-          setUsuario(usuarioEncontrado);
-          setSaldo(usuarioEncontrado.saldo);
-        }
-      }
-    } else {
-        // Manejar el caso en que data no es un array (opcional: puedes inicializar con un array vacío o mostrar un error)
-        console.warn("localStorage 'usuarios_data' no contiene un array válido:", data);
-        setUsuariosData([]);
-    }
-  } else {
-    setUsuariosData(userData);
-    const usuarioGuardado = localStorage.getItem('usuario');
-    if (usuarioGuardado) {
-      const datosUsuario = JSON.parse(usuarioGuardado);
-      const usuarioEncontrado = userData.find(u => u.id === datosUsuario.id);
-      if (usuarioEncontrado) {
-        setUsuario(usuarioEncontrado);
-        setSaldo(usuarioEncontrado.saldo);
-      }
+  useEffect(() => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    } catch (err) {
+      console.error('Error al parsear user desde localStorage:', err);
+      setUser(null);
     }
   }
 }, []);
 
-  useEffect(() => {
-    console.log("El saldo en App.js ha cambiado a:", saldo);
-  }, [saldo]);
+  // useEffect(() => {
+  //   const storedUsuariosData = localStorage.getItem('usuarios_data');
+  //   if (storedUsuariosData) {
+  //     const data = JSON.parse(storedUsuariosData);
+  //     if (Array.isArray(data)) { // Verifica si data es un array
+  //       setUser(data);
+  //       const usuarioGuardado = localStorage.getItem('usuario');
+  //       if (usuarioGuardado) {
+  //         const datosUsuario = JSON.parse(usuarioGuardado);
+  //         const usuarioEncontrado = data.find(u => u.id === datosUsuario.id);
+  //         if (usuarioEncontrado) {
+  //           setUsuario(usuarioEncontrado);
+  //           setSaldo(usuarioEncontrado.saldo);
+  //         }
+  //       }
+  //     } else {
+  //       // Manejar el caso en que data no es un array (opcional: puedes inicializar con un array vacío o mostrar un error)
+  //       console.warn("localStorage 'usuarios_data' no contiene un array válido:", data);
+  //       setUser([]);
+  //     }
+  //   } else {
+  //     setUser(user);
+  //     const usuarioGuardado = localStorage.getItem('user');
+  //     if (usuarioGuardado) {
+  //       const datosUsuario = JSON.parse(usuarioGuardado);
+  //       const usuarioEncontrado = user.find(u => u.dni === datosUsuario.dni);
+  //       if (usuarioEncontrado) {
+  //         setUser(usuarioEncontrado);
+
+  //       }
+  //     }
+  //   }
+  // }, []);
 
   return (
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route path="/" element={<LoginForm setUsuario={setUsuario} setSaldo={setSaldo} setUsuariosData={setUsuariosData} />} /> {/* Pasa setUsuariosData */}
+          <Route path="/" element={<LoginForm setUser={setUser} />} />
           <Route
             path="/home"
             element={
               <PrivateRoute>
-                <Home usuario={usuario} saldo={saldo} />
+                <Home user={user} />
               </PrivateRoute>
             }
           />
+
           <Route
             path="/transferencia"
             element={
               <PrivateRoute>
-                <Transferencia usuario={usuario} saldo={saldo} setSaldo={setSaldo} />
+                <Transferencia user={user} />
               </PrivateRoute>
             }
           />
@@ -88,7 +96,15 @@ useEffect(() => {
             path="/deposito"
             element={
               <PrivateRoute>
-                <Deposito usuario={usuario} saldo={saldo} setSaldo={setSaldo} />
+                <Deposito user={user} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/panelControl"
+            element={
+              <PrivateRoute>
+                <PanelControl user={user} />
               </PrivateRoute>
             }
           />
