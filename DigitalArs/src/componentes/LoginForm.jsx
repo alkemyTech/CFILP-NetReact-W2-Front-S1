@@ -181,9 +181,17 @@ const LoginForm = () => {
 
     try {
       const { token, user } = await login(form.email, form.password);
+
+      // Asignar rol para el user antes de setear
+      user.rol = user.roles?.[0]?.nombre || 'Sin rol';
+
+      // Guardar token y usuario con rol en localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+
+      // Actualizar contexto con usuario con rol
       setUser(user);
+
       setError('');
       navigate('/Home');
     } catch (err) {
