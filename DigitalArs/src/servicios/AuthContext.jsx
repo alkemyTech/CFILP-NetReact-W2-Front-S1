@@ -1,14 +1,11 @@
 import axios from 'axios';
 import React, { createContext, useEffect, useState } from 'react';
 
-// Crear contexto
 export const AuthContext = createContext();
 
-// Proveedor del contexto
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // Función para refrescar los datos del usuario desde el backend
   const refetchUser = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -16,6 +13,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!token || !storedUserRaw) {
         console.warn('Token o usuario faltante en localStorage.');
+        setUser(null);
         return;
       }
 
@@ -23,7 +21,8 @@ export const AuthProvider = ({ children }) => {
       const dni = storedUser?.dni;
 
       if (!dni) {
-        console.warn('DNI no encontrado en el usuario almacenado.');
+        console.warn('DNI no encontrado en el usuario almacenado para refetch.');
+        setUser(null);
         return;
       }
 
@@ -37,6 +36,9 @@ export const AuthProvider = ({ children }) => {
       console.log('Usuario actualizado:', updatedUser);
     } catch (error) {
       console.error('Error al refrescar datos de usuario:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
     }
   };
 
@@ -49,6 +51,7 @@ export const AuthProvider = ({ children }) => {
         setUser(storedUser);
       } catch (e) {
         console.warn('Error al parsear usuario desde localStorage:', e);
+        localStorage.removeItem('user'); // Limpiar si hay un error de parseo
       }
     }
   }, []);

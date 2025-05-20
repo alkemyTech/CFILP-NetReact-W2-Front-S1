@@ -29,7 +29,6 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const idTipo = location.state?.idTipo;
-
   const cuentaOrigen = user?.cuentas?.[0];
 
   const [cvuDestino, setCvuDestino] = useState("");
@@ -51,25 +50,33 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
     apellido: "",
   });
 
-  // Validar que exista idTipo
   useEffect(() => {
     if (!idTipo) {
       setDialogMessage("Falta información de la transacción. Redirigiendo...");
       setOpenDialog(true);
       setTimeout(() => navigate("/home"), 2000);
     }
-  }, [idTipo]);
+  }, [idTipo, navigate]);
 
   useEffect(() => {
     const saldoInicial = Number(propSaldo) || Number(cuentaOrigen?.saldo) || 0;
     setSaldoDisponible(saldoInicial);
-  }, [propSaldo, user]);
+  }, [propSaldo, user, cuentaOrigen]);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
     axios
-      .get("https://localhost:7097/Cuenta")
+      .get("https://localhost:7097/Cuenta", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       .then((res) => setCuentas(res.data || []))
-      .catch(() => setMensaje("Error al cargar cuentas destino."));
+      .catch((error) => { 
+        console.error("Error al cargar cuentas destino:", error);
+        setMensaje("Error al cargar cuentas destino. Asegúrate de tener permisos.");
+      });
   }, []);
 
   useEffect(() => {
@@ -82,9 +89,9 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
 
     if (cuentaSeleccionada) {
       setDatosUsuarioDestino({
-        dni: cuentaSeleccionada.dni || cuentaSeleccionada.usuario?.dni || "",
-        nombre: cuentaSeleccionada.nombre || cuentaSeleccionada.usuario?.nombre || "",
-        apellido: cuentaSeleccionada.apellido || cuentaSeleccionada.usuario?.apellido || "",
+        dni: cuentaSeleccionada.usuario?.dni || cuentaSeleccionada.dni || "",
+        nombre: cuentaSeleccionada.usuario?.nombre || cuentaSeleccionada.nombre || "",
+        apellido: cuentaSeleccionada.usuario?.apellido || cuentaSeleccionada.apellido || "",
       });
     } else {
       setDatosUsuarioDestino({ dni: "", nombre: "", apellido: "" });
@@ -99,7 +106,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
     } else {
       setSaldoDisponible(Number(propSaldo) || Number(cuentaOrigen?.saldo) || 0);
     }
-  }, [monto, propSaldo, user]);
+  }, [monto, propSaldo, user, cuentaOrigen]);
 
   const handleTransferir = async () => {
     const montoTransferido = parseFloat(monto);
@@ -112,6 +119,14 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
     if (montoTransferido > saldoDisponible) {
       setMensaje("Saldo insuficiente.");
       return;
+      C
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setMensaje("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+      navigate('/');
+      return;
     }
 
     try {
@@ -122,6 +137,10 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
         monto: montoTransferido,
         fecha: new Date().toISOString(),
         descripcion: "Transferencia desde UI",
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       setDialogMessage(`Transferencia de $${montoTransferido.toLocaleString("es-AR")} realizada con éxito a la cuenta ${cvuDestino}`);
@@ -141,11 +160,22 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
       // Redirigir con señal para refrescar saldo real
       setTimeout(() => {
         setOpenDialog(false);
-        navigate("/home", { state: { refreshUser: true } }); // <-- cambio aquí
+        navigate("/home", { state: { refreshUser: true } }); 
       }, 1500);
     } catch (error) {
       console.error("Error al transferir:", error);
-      setMensaje("Error al procesar la transferencia. Intente más tarde.");
+      if (error.response) {
+        if (error.response.status === 401 || error.response.status === 403) {
+          setMensaje("Acceso no autorizado o insuficiente para realizar la transferencia.");
+          navigate('/');
+        } else if (error.response.data) {
+          setMensaje(`Error: ${error.response.data}`);
+        } else {
+          setMensaje("Error al procesar la transferencia. Intente más tarde.");
+        }
+      } else {
+        setMensaje("No se pudo conectar con el servidor. Verifique su conexión.");
+      }
     }
   };
 
@@ -240,11 +270,10 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 variant="outlined"
                 fullWidth
                 onClick={() => {
-                  localStorage.removeItem("idTipo");
                   navigate(-1);
                 }}
               >
-                Volver
+                Cancelar
               </Button>
             </Grid>
             <Grid item xs={6}>

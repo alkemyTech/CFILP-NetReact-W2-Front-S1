@@ -11,19 +11,25 @@ import {
   DialogContent,
   DialogTitle,
   DialogActions,
-  Avatar
+  Avatar,
+  FormControl,
+  InputLabel
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { CheckCircle } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "../utils/theme";
 import axios from "axios";
+import { AuthContext } from "../servicios/AuthContext";
 
-
-const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
+const Inversion = () => {
+  const { user, refetchUser } = useContext(AuthContext);
   const navigate = useNavigate();
-  const idUsuario = user?.id;
+  const location = useLocation();
+  const idTipo = location.state?.idTipo;
+
+  const cuentaOrigen = user?.cuentas?.[0];
 
   const [monto, setMonto] = useState("");
   const [dias, setDias] = useState("");
@@ -31,74 +37,136 @@ const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogIcon, setDialogIcon] = useState(null);
   const [error, setError] = useState("");
-  const [saldoDisponible, setSaldoDisponible] = useState(propSaldo || 0);
+
+  const saldoRealActual = Number(cuentaOrigen?.saldo) || 0;
+  const [saldoVisual, setSaldoVisual] = useState(saldoRealActual);
 
   useEffect(() => {
-    setSaldoDisponible(propSaldo);
-  }, [propSaldo]);
+    setSaldoVisual(saldoRealActual);
+  }, [saldoRealActual]);
 
   useEffect(() => {
-    axios
-      .get("https://localhost:7097/Usuario/{id}")
-      .then((res) => setUsuarios(res.data || []))
-      .catch(() => setMensaje("Error al cargar cuentas destino."));
-  }, []);
+    if (!idTipo) {
+        setError("Falta información de la inversión. Redirigiendo...");
+        setTimeout(() => navigate("/home"), 2000);
+    }
+  }, [idTipo, navigate]);
+
+  useEffect(() => {
+    const montoNum = parseFloat(monto);
+    if (!isNaN(montoNum) && montoNum >= 0) {
+      const nuevoSaldoVisual = saldoRealActual - montoNum;
+
+      setSaldoVisual(nuevoSaldoVisual >= 0 ? nuevoSaldoVisual : 0);
+      if (montoNum > saldoRealActual) {
+        setError("El monto a invertir no puede ser mayor que su saldo disponible.");
+      } else {
+        setError("");
+      }
+    } else {
+      setSaldoVisual(saldoRealActual);
+      setError("");
+    }
+  }, [monto, saldoRealActual]);
 
   const calcularGanancia = () => {
     const montoNum = parseFloat(monto);
     const diasNum = parseInt(dias);
-    if (isNaN(montoNum) || isNaN(diasNum) || montoNum <= 0 || diasNum <= 0) return 0;
 
-    const tasaDiaria = 0.03 / 30; // 3% mensual aproximado dividido en días
+    if (isNaN(montoNum) || isNaN(diasNum) || montoNum <= 0 || diasNum <= 0) {
+        return 0;
+    }
+    const tasaAnual = 0.32;
+    const tasaDiaria = tasaAnual / 365;
+
     const interes = montoNum * tasaDiaria * diasNum;
     return montoNum + interes;
   };
 
-  const handleInvertir = () => {
+  const handleInvertir = async () => {
     setError("");
 
     const montoNum = parseFloat(monto);
     const diasNum = parseInt(dias);
 
-    if (!idUsuario || !montoNum || montoNum <= 0 || !diasNum || diasNum <= 0) {
+    if (!user || !cuentaOrigen) {
+      setError("No se ha podido obtener la información de su cuenta. Intente de nuevo.");
+      return;
+    }
+
+    if (!montoNum || montoNum <= 0 || !diasNum || diasNum <= 0) {
       setError("Complete todos los campos correctamente.");
       return;
     }
 
-    if (montoNum > saldoDisponible) {
+    if (montoNum > saldoRealActual) {
       setError("Saldo insuficiente para realizar esta inversión.");
       return;
     }
 
-    let usuariosGuardados = JSON.parse(localStorage.getItem("user")) || [];
-    const idx = usuariosGuardados.findIndex((u) => u.id === idUsuario);
-
-    if (idx === -1) {
-      setError("Usuario no encontrado.");
-      return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+        navigate('/');
+        return;
     }
 
-    usuariosGuardados[idx].saldo -= montoNum;
-    localStorage.setItem("user", JSON.stringify(usuariosGuardados));
-    localStorage.setItem("usuarios_data", JSON.stringify(usuariosGuardados));
+    try {
+        await axios.post("https://localhost:7097/Transaccion", {
+            ctaOrigen: cuentaOrigen.numero,
+            ctaDestino: cuentaOrigen.numero,
+            idTipo: parseInt(idTipo),
+            monto: montoNum,
+            fecha: new Date().toISOString(),
+            descripcion: `Inversión a Plazo Fijo por ${diasNum} días.`,
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
 
-    setSaldo(usuariosGuardados[idx].saldo);
-    setSaldoDisponible(usuariosGuardados[idx].saldo);
+        await refetchUser();
 
-    const totalEstimado = calcularGanancia().toLocaleString("es-AR", {
-      minimumFractionDigits: 2
-    });
+        const totalEstimado = calcularGanancia().toLocaleString("es-AR", {
+            minimumFractionDigits: 2
+        });
 
-    setDialogMessage(`¡Inversión realizada! Al finalizar obtendrás aproximadamente $${totalEstimado}.`);
-    setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
-    setOpenDialog(true);
+        setDialogMessage(`¡Inversión realizada! Al finalizar obtendrás aproximadamente $${totalEstimado}.`);
+        setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
+        setOpenDialog(true);
 
-    setTimeout(() => {
-      setOpenDialog(false);
-      setUsuarios([usuariosGuardados]);
-      navigate("/home");
-    }, 3000);
+        setMonto("");
+        setDias("");
+       
+        setTimeout(() => {
+            setOpenDialog(false);
+            navigate("/home", { state: { refreshUser: true } });
+        }, 3000);
+
+    } catch (apiError) {
+        console.error("Error al invertir:", apiError);
+        if (apiError.response) {
+            if (apiError.response.status === 401 || apiError.response.status === 403) {
+                setError("Acceso no autorizado o insuficiente para realizar la inversión.");
+                navigate('/');
+            } else if (apiError.response.data) {
+                setError(`Error: ${apiError.response.data}`);
+            } else {
+                setError("Error al procesar la inversión. Intente más tarde.");
+            }
+        } else {
+            setError("No se pudo conectar con el servidor. Verifique su conexión.");
+        }
+    }
   };
+
+  if (!user) {
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 5 }}>
+        Cargando datos de usuario...
+      </Typography>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -110,7 +178,7 @@ const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
                 {user?.nombre?.charAt(0).toUpperCase() || "U"}
               </Avatar>
             </Grid>
-<Grid item sx={{ flexGrow: 1 }}>
+            <Grid item sx={{ flexGrow: 1 }}>
               <Typography variant="h6">
                 {user?.nombre} {user?.apellido}
               </Typography>
@@ -119,8 +187,8 @@ const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
               </Typography>
               <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 2 }}>
                 Saldo disponible: $
-                {typeof saldoDisponible === "number"
-                  ? saldoDisponible.toLocaleString("es-AR", { minimumFractionDigits: 2 })
+                {typeof saldoVisual === "number" // Usar saldoVisual aquí
+                  ? saldoVisual.toLocaleString("es-AR", { minimumFractionDigits: 2 })
                   : "Cargando..."}
               </Typography>
             </Grid>
@@ -133,25 +201,34 @@ const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <TextField
                 label="Monto a invertir"
                 type="number"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
                 fullWidth
-                InputProps={{ inputProps: { min: 1 } }}
+                InputProps={{ inputProps: { min: 1, max: saldoRealActual } }}
+                error={monto > saldoRealActual && monto !== ''}
+                helperText={monto > saldoRealActual && monto !== '' ? "El monto excede su saldo disponible." : ""} // Mensaje de ayuda
               />
             </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="Días"
-                type="number"
-                value={dias}
-                onChange={(e) => setDias(e.target.value)}
-                fullWidth
-                InputProps={{ inputProps: { min: 1 } }}
-              />
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="dias-label">Días</InputLabel>
+                <Select
+                  labelId="dias-label"
+                  label="Días"
+                  value={dias}
+                  onChange={(e) => setDias(e.target.value)}
+                >
+                  <MenuItem value={30}>30 días</MenuItem>
+                  <MenuItem value={60}>60 días</MenuItem>
+                  <MenuItem value={90}>90 días</MenuItem>
+                  <MenuItem value={180}>180 días</MenuItem>
+                  <MenuItem value={365}>365 días</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
 
@@ -172,7 +249,12 @@ const Inversion = ({ user, saldo: propSaldo, setSaldo }) => {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button variant="contained" fullWidth onClick={handleInvertir}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleInvertir}
+                disabled={monto > saldoRealActual || parseFloat(monto) <= 0 || isNaN(parseFloat(monto)) || !dias} // Deshabilitar si el monto excede o es inválido/vacío
+              >
                 Invertir
               </Button>
             </Grid>
