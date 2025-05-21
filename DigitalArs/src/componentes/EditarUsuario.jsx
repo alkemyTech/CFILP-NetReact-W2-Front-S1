@@ -16,39 +16,36 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
-import { useNavigate, useParams } from 'react-router-dom'; // Importa useParams
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../utils/theme';
 
 const EditarUsuario = () => {
   const navigate = useNavigate();
-  const { dni } = useParams(); // Obtiene el DNI del usuario desde la URL
+  const { dni } = useParams();
   const [formData, setFormData] = useState({
     dni: '',
     nombre: '',
     apellido: '',
     email: '',
-    password: '', // Puede que no quieras cargar la contraseña real para edición
-    roles: [], // Para almacenar los IDs de los roles seleccionados
+    password: '',
+    roles: [],
   });
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
-  const [loading, setLoading] = useState(true); // Inicia en true para cargar datos
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Efecto para cargar roles disponibles y los datos del usuario a editar
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError('');
       try {
-        // 1. Cargar roles disponibles
         const rolesResponse = await axios.get('https://localhost:7097/Rol');
         setRolesDisponibles(rolesResponse.data || []);
 
-        // 2. Cargar datos del usuario a editar
-        if (dni) { // Solo si hay un DNI en los parámetros
+        if (dni) {
           const token = localStorage.getItem('token');
           if (!token) {
             setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
@@ -63,15 +60,13 @@ const EditarUsuario = () => {
           });
           const userData = userResponse.data;
 
-          // Asignar los datos del usuario al formData
           setFormData({
             dni: userData.dni || '',
             nombre: userData.nombre || '',
             apellido: userData.apellido || '',
             email: userData.email || '',
-            password: '', // Nunca cargues la contraseña real por seguridad.
-                         // El usuario deberá ingresarla si quiere cambiarla.
-            roles: userData.roles?.map(rol => rol.id) || [], // Extraer solo los IDs de los roles
+            password: '',
+            roles: userData.roles?.map(rol => rol.id) || [],
           });
         }
       } catch (err) {
@@ -82,7 +77,7 @@ const EditarUsuario = () => {
       }
     };
     fetchData();
-  }, [dni, navigate]); // Dependencias: dni para recargar si cambia, navigate para la redirección
+  }, [dni, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,7 +93,7 @@ const EditarUsuario = () => {
   const handleRolesChange = (e) => {
     setFormData(prev => ({
       ...prev,
-      roles: e.target.value // Material-UI Select con multiple maneja el array automáticamente
+      roles: e.target.value
     }));
     if (validationErrors.roles) {
       setValidationErrors(prev => ({ ...prev, roles: '' }));
@@ -113,10 +108,6 @@ const EditarUsuario = () => {
     if (!formData.apellido) errors.apellido = 'El apellido es obligatorio.';
     if (!formData.email) errors.email = 'El email es obligatorio.';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'El email no es válido.';
-    // La contraseña es opcional al editar, solo si se cambia.
-    // Si se deja vacío, no la envíes para no sobrescribir la hasheada con una cadena vacía.
-    // Aquí puedes decidir si quieres que sea obligatoria si la editan.
-    // if (!formData.password) errors.password = 'La contraseña es obligatoria.';
     if (formData.password && formData.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres si se va a cambiar.';
     if (formData.roles.length === 0) errors.roles = 'Debe seleccionar al menos un rol.';
 
@@ -156,21 +147,19 @@ const EditarUsuario = () => {
         nombre: formData.nombre,
         apellido: formData.apellido,
         email: formData.email,
-        // Solo incluye la contraseña en el payload si el usuario la ha ingresado/modificado
         ...(formData.password && { password: formData.password }), 
         roles: rolesParaEnviar
       };
       
       console.log("Payload que se enviará para edición:", payload);
 
-      // Usar PUT para actualizar
-      await axios.put(`https://localhost:7097/Usuario/${dni}`, payload, { // Usa el DNI de los parámetros
+      await axios.put(`https://localhost:7097/Usuario/${dni}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       alert('Usuario actualizado exitosamente!');
-      navigate('/usuarios'); // Redirige a la lista de usuarios
+      navigate('/usuarios');
     } catch (err) {
       console.error("Error al actualizar usuario:", err.response?.data || err.message);
       setError(`Error al actualizar el usuario: ${JSON.stringify(err.response?.data || 'Verifica la conexión o los datos ingresados.')}`);
@@ -179,7 +168,7 @@ const EditarUsuario = () => {
     }
   };
 
-  if (loading && dni) { // Muestra CircularProgress solo mientras carga el usuario existente
+  if (loading && dni) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
@@ -224,7 +213,7 @@ const EditarUsuario = () => {
                   helperText={validationErrors.dni}
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                   autoComplete="dni"
-                  disabled // El DNI no debería ser editable ya que es la PK
+                  disabled
                 />
               </Grid>
               <Grid gridColumn="span 6" sx={{ width: '100%' }}>
@@ -302,7 +291,7 @@ const EditarUsuario = () => {
                   onChange={handleChange}
                   error={!!validationErrors.password}
                   helperText={validationErrors.password}
-                  autoComplete="new-password" // Sugerir nueva contraseña al navegador
+                  autoComplete="new-password"
                 />
               </Grid>
             </Grid>
@@ -313,7 +302,7 @@ const EditarUsuario = () => {
                   variant="outlined"
                   color="secondary"
                   startIcon={<ArrowBackIcon />}
-                  onClick={() => navigate('/usuarios')} // Volver a la lista de usuarios
+                  onClick={() => navigate('/usuarios')}
                   disabled={loading}
                 >
                   Cancelar
@@ -326,7 +315,7 @@ const EditarUsuario = () => {
                   color="primary"
                   startIcon={<SaveIcon />}
                   disabled={loading}
-                  sx={{ float: 'right' }} // Alinea a la derecha
+                  sx={{ float: 'right' }}
                 >
                   {loading ? <CircularProgress size={24} /> : 'Guardar Cambios'}
                 </Button>
