@@ -114,7 +114,7 @@ const CrearUsuario = () => {
         password: formData.password,
         roles: rolesSeleccionados
       };
-      console.log("Payload que se enviará:", payload);
+
       setLoading(true);
 
       const token = localStorage.getItem('token');
