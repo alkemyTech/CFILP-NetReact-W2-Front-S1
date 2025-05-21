@@ -13,6 +13,7 @@ import CrearUsuario from './componentes/CrearUsuario';
 import EditarUsuario from './componentes/EditarUsuario';
 import Cuentas from './componentes/Cuentas';
 import Transacciones from './componentes/Transacciones';
+import Deposito from './componentes/Deposito'; // ✅ NUEVO
 
 const theme = createTheme({
   palette: {
@@ -97,6 +98,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Transacciones />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/deposito" // Nueva ruta
+              element={
+                <PrivateRoute>
+                  <Deposito />
                 </PrivateRoute>
               }
             />

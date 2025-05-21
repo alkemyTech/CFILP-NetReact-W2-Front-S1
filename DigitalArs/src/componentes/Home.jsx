@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SavingsIcon from '@mui/icons-material/Savings';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; // Icono para depósito
 import {
   Button,
   Typography,
@@ -34,10 +35,9 @@ const Home = () => {
   useEffect(() => {
     if (location.state?.refreshUser) {
       refetchUser();
-      window.history.replaceState({}, document.title); // Limpiar estado de navegación
+      window.history.replaceState({}, document.title);
     }
   }, [location.state]);
-
 
   const handleLogout = () => {
     logout();
@@ -51,6 +51,10 @@ const Home = () => {
 
   const handlePlazoFijo = () => {
     navigate('/inversion', { state: { idTipo: 1 } });
+  };
+
+  const handleDeposito = () => {
+    navigate('/deposito');
   };
 
   const handleAdmin = () => {
@@ -81,7 +85,6 @@ const Home = () => {
               <Typography variant="h5">{nombreCompleto}</Typography>
               <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
               <Typography variant="subtitle2" color="text.secondary">
-                {/* Modifica esta línea para usar 'roleNames' */}
                 {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
               </Typography>
             </Grid>
@@ -109,7 +112,7 @@ const Home = () => {
 
           <Box
             display="grid"
-            gridTemplateColumns={{ xs: '1fr', sm: 'repeat(3, 1fr)' }}
+            gridTemplateColumns={{ xs: '1fr', sm: `repeat(${esAdmin ? 4 : 3}, 1fr)` }}
             gap={2}
           >
             <Button
@@ -134,6 +137,18 @@ const Home = () => {
               aria-label="Inversión"
             >
               Invertir
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              size="large"
+              startIcon={<AccountBalanceIcon />}
+              onClick={handleDeposito}
+              sx={{ height: '100px' }}
+              aria-label="Depósito"
+            >
+              Depositar
             </Button>
             {esAdmin && (
               <Button

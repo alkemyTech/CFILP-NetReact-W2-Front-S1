@@ -9,7 +9,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  IconButton,
   Button,
   Grid,
   Avatar
@@ -37,8 +36,7 @@ const Transacciones = () => {
         const dateB = new Date(b.fecha);
         return dateB.getTime() - dateA.getTime();
       });
-      setTransacciones(response.data ?? []);
-
+      setTransacciones(sortedTransacciones ?? []);
     } catch (err) {
       console.error("Error al obtener transacciones:", err);
       setError("Error al cargar las transacciones.");
@@ -48,90 +46,93 @@ const Transacciones = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ width: 56, height: 56 }}>T</Avatar>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto", height: '80vh', display: 'flex', flexDirection: 'column' }}>
+          
+          {/* Encabezado con título y botón de volver */}
+          <Grid container alignItems="center" justifyContent="space-between" sx={{ marginBottom: 3 }}>
+            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar sx={{ width: 56, height: 56, marginRight: 2 }}>T</Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  Transacciones
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Historial de movimientos entre cuentas
+                </Typography>
+              </Box>
             </Grid>
-            <Grid sx={{ flexGrow: 1 }}>
-              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Transacciones
-              </Typography>
-              <Typography variant="subtitle2" color="text.secondary">
-                Historial de movimientos entre cuentas
-              </Typography>
+
+            <Grid item>
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="medium"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate(-1)}
+              >
+                Volver
+              </Button>
             </Grid>
           </Grid>
 
           {error ? (
             <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
           ) : (
-            <>
-              <TableContainer component={Paper} sx={{ marginY: 2 }}>
-                <Table>
-                  <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableRow>
-                      <TableCell><strong>Fecha</strong></TableCell>
-                      <TableCell><strong>Cuenta Origen</strong></TableCell>
-                      <TableCell><strong>Usuario Origen</strong></TableCell>
-                      <TableCell><strong>Cuenta Destino</strong></TableCell>
-                      <TableCell><strong>Usuario Destino</strong></TableCell>
-                      <TableCell><strong>Monto</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {transacciones.length > 0 ? (
-                      transacciones.map((tx) => (
-                        <TableRow key={tx.id}>
-                          <TableCell>{new Date(tx.fecha).toLocaleString()}</TableCell>
-                          <TableCell>{tx.cuentaOrigen?.numero ?? "N/A"}</TableCell>
-                          <TableCell>
-                            {tx.cuentaOrigen?.usuario
-                              ? `${tx.cuentaOrigen.usuario.nombre} ${tx.cuentaOrigen.usuario.apellido}`
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell>{tx.cuentaDestino?.numero ?? "N/A"}</TableCell>
-                          <TableCell>
-                            {tx.cuentaDestino?.usuario
-                              ? `${tx.cuentaDestino.usuario.nombre} ${tx.cuentaDestino.usuario.apellido}`
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell>
-                            {tx.monto?.toLocaleString('es-AR', {
-                              style: 'currency',
-                              currency: 'ARS'
-                            }) ?? 0}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} align="center">
-                          No hay transacciones registradas.
+            <TableContainer
+              component={Paper}
+              sx={{
+                flexGrow: 1,
+                overflowY: "auto",
+                maxHeight: '100%',
+                marginTop: 2
+              }}
+            >
+              <Table stickyHeader>
+                <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableRow>
+                    <TableCell><strong>Fecha</strong></TableCell>
+                    <TableCell><strong>Cuenta Origen</strong></TableCell>
+                    <TableCell><strong>Usuario Origen</strong></TableCell>
+                    <TableCell><strong>Cuenta Destino</strong></TableCell>
+                    <TableCell><strong>Usuario Destino</strong></TableCell>
+                    <TableCell><strong>Monto</strong></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {transacciones.length > 0 ? (
+                    transacciones.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell>{new Date(tx.fecha).toLocaleString()}</TableCell>
+                        <TableCell>{tx.cuentaOrigen?.numero ?? "N/A"}</TableCell>
+                        <TableCell>
+                          {tx.cuentaOrigen?.usuario
+                            ? `${tx.cuentaOrigen.usuario.nombre} ${tx.cuentaOrigen.usuario.apellido}`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell>{tx.cuentaDestino?.numero ?? "N/A"}</TableCell>
+                        <TableCell>
+                          {tx.cuentaDestino?.usuario
+                            ? `${tx.cuentaDestino.usuario.nombre} ${tx.cuentaDestino.usuario.apellido}`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          {tx.monto?.toLocaleString('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS'
+                          }) ?? 0}
                         </TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {/* Botón Volver */}
-              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }} columns={12}>
-                <Grid gridColumn="span 2">
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    size="large"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(-1)}
-                    fullWidth
-                    sx={{ height: '60px' }}
-                  >
-                    Volver
-                  </Button>
-                </Grid>
-              </Grid>
-            </>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        No hay transacciones registradas.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Paper>
       </Box>
