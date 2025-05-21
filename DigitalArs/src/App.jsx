@@ -8,9 +8,11 @@ import Home from './componentes/Home';
 import Transferencia from './componentes/Transferencia';
 import Inversion from './componentes/Inversion';
 import Administrar from './componentes/Administrar';
-import Usuarios from './componentes/usuarios';
-import Cuentas from './componentes/cuentas';
-import Transacciones from './componentes/transacciones';
+import Usuarios from './componentes/Usuarios';
+import CrearUsuario from './componentes/CrearUsuario';
+import EditarUsuario from './componentes/EditarUsuario';
+import Cuentas from './componentes/Cuentas';
+import Transacciones from './componentes/Transacciones';
 
 const theme = createTheme({
   palette: {
@@ -63,6 +65,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <Usuarios />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/crearUsuario"
+              element={
+                <PrivateRoute>
+                  <CrearUsuario />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/editarUsuario/:dni"
+              element={
+                <PrivateRoute>
+                  <EditarUsuario />
                 </PrivateRoute>
               }
             />

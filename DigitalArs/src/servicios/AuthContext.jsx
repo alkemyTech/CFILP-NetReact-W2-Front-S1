@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
       const updatedUser = response.data;
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('Usuario actualizado:', updatedUser);
     } catch (error) {
       console.error('Error al refrescar datos de usuario:', error);
       localStorage.removeItem('token');

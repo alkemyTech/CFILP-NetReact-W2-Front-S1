@@ -32,6 +32,11 @@ const Transacciones = () => {
   const obtenerTransacciones = async () => {
     try {
       const response = await axios.get("https://localhost:7097/Transaccion");
+      const sortedTransacciones = response.data.sort((a, b) => {
+        const dateA = new Date(a.fecha);
+        const dateB = new Date(b.fecha);
+        return dateB.getTime() - dateA.getTime();
+      });
       setTransacciones(response.data ?? []);
 
     } catch (err) {
@@ -43,12 +48,12 @@ const Transacciones = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1100, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-            <Grid item>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ width: 56, height: 56 }}>T</Avatar>
             </Grid>
-            <Grid item xs>
+            <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                 Transacciones
               </Typography>
@@ -110,14 +115,16 @@ const Transacciones = () => {
                 </Table>
               </TableContainer>
 
-              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }}>
-                <Grid item>
+              {/* Botón Volver */}
+              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }} columns={12}>
+                <Grid gridColumn="span 2">
                   <Button
                     variant="outlined"
                     color="secondary"
                     size="large"
                     startIcon={<ArrowBackIcon />}
                     onClick={() => navigate(-1)}
+                    fullWidth
                     sx={{ height: '60px' }}
                   >
                     Volver

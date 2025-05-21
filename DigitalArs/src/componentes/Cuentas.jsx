@@ -16,6 +16,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Reutilizaremos este ícono o puedes buscar uno específico para cuentas
+import EditIcon from '@mui/icons-material/Edit'; // Importa el ícono de editar
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ThemeProvider } from "@mui/material/styles";
@@ -52,15 +54,23 @@ const Cuentas = () => {
     }
   };
 
+  // const crearCuenta = () => {
+  //   navigate('/crearCuentas');
+  // };
+
+  // const editarCuenta = (numero) => {
+  //   navigate(`/editarCuentas/${numero}`);
+  // };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-            <Grid item>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ width: 56, height: 56 }}>C</Avatar>
             </Grid>
-            <Grid item xs>
+            <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                 Cuentas
               </Typography>
@@ -68,6 +78,16 @@ const Cuentas = () => {
                 Gestión de cuentas
               </Typography>
             </Grid>
+            {/* <Box display="flex" flexDirection="column" gap={1}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PersonAddIcon />}
+                onClick={crearCuenta}
+              >
+                Crear Cuenta
+              </Button>
+            </Box> */}
           </Grid>
 
           {error ? (
@@ -99,6 +119,16 @@ const Cuentas = () => {
                           </TableCell>
                           <TableCell>{cuenta.saldo?.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) ?? 0}</TableCell>
                           <TableCell>
+                            {/* Botón Editar */}
+                            {/* <IconButton
+                              color="info"
+                              onClick={() => editarCuenta(cuenta.numero)}
+                              aria-label="Editar cuenta"
+                              sx={{ mr: 1 }}
+                            >
+                              <EditIcon />
+                            </IconButton> */}
+                            {/* Botón Eliminar existente */}
                             <IconButton
                               color="error"
                               onClick={() => eliminarCuenta(cuenta.numero)}
@@ -120,14 +150,15 @@ const Cuentas = () => {
                 </Table>
               </TableContainer>
 
-              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }}>
-                <Grid item>
+              <Grid container spacing={2} justifyContent="flex-start" sx={{ marginTop: 2 }} columns={12}>
+                <Grid gridColumn="span 2">
                   <Button
                     variant="outlined"
                     color="secondary"
                     size="large"
                     startIcon={<ArrowBackIcon />}
                     onClick={() => navigate(-1)}
+                    fullWidth
                     sx={{ height: '60px' }}
                   >
                     Volver

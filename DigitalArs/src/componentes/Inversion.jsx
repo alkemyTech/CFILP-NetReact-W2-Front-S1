@@ -47,8 +47,8 @@ const Inversion = () => {
 
   useEffect(() => {
     if (!idTipo) {
-        setError("Falta información de la inversión. Redirigiendo...");
-        setTimeout(() => navigate("/home"), 2000);
+      setError("Falta información de la inversión. Redirigiendo...");
+      setTimeout(() => navigate("/home"), 2000);
     }
   }, [idTipo, navigate]);
 
@@ -74,7 +74,7 @@ const Inversion = () => {
     const diasNum = parseInt(dias);
 
     if (isNaN(montoNum) || isNaN(diasNum) || montoNum <= 0 || diasNum <= 0) {
-        return 0;
+      return 0;
     }
     const tasaAnual = 0.32;
     const tasaDiaria = tasaAnual / 365;
@@ -106,57 +106,57 @@ const Inversion = () => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-        setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
-        navigate('/');
-        return;
+      setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+      navigate('/');
+      return;
     }
 
     try {
-        await axios.post("https://localhost:7097/Transaccion", {
-            ctaOrigen: cuentaOrigen.numero,
-            ctaDestino: cuentaOrigen.numero,
-            idTipo: parseInt(idTipo),
-            monto: montoNum,
-            fecha: new Date().toISOString(),
-            descripcion: `Inversión a Plazo Fijo por ${diasNum} días.`,
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+      await axios.post("https://localhost:7097/Transaccion", {
+        ctaOrigen: cuentaOrigen.numero,
+        ctaDestino: cuentaOrigen.numero,
+        idTipo: parseInt(idTipo),
+        monto: montoNum,
+        fecha: new Date().toISOString(),
+        descripcion: `Inversión a Plazo Fijo por ${diasNum} días.`,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-        await refetchUser();
+      await refetchUser();
 
-        const totalEstimado = calcularGanancia().toLocaleString("es-AR", {
-            minimumFractionDigits: 2
-        });
+      const totalEstimado = calcularGanancia().toLocaleString("es-AR", {
+        minimumFractionDigits: 2
+      });
 
-        setDialogMessage(`¡Inversión realizada! Al finalizar obtendrás aproximadamente $${totalEstimado}.`);
-        setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
-        setOpenDialog(true);
+      setDialogMessage(`¡Inversión realizada! Al finalizar obtendrás aproximadamente $${totalEstimado}.`);
+      setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
+      setOpenDialog(true);
 
-        setMonto("");
-        setDias("");
-       
-        setTimeout(() => {
-            setOpenDialog(false);
-            navigate("/home", { state: { refreshUser: true } });
-        }, 3000);
+      setMonto("");
+      setDias("");
+
+      setTimeout(() => {
+        setOpenDialog(false);
+        navigate("/home", { state: { refreshUser: true } });
+      }, 3000);
 
     } catch (apiError) {
-        console.error("Error al invertir:", apiError);
-        if (apiError.response) {
-            if (apiError.response.status === 401 || apiError.response.status === 403) {
-                setError("Acceso no autorizado o insuficiente para realizar la inversión.");
-                navigate('/');
-            } else if (apiError.response.data) {
-                setError(`Error: ${apiError.response.data}`);
-            } else {
-                setError("Error al procesar la inversión. Intente más tarde.");
-            }
+      console.error("Error al invertir:", apiError);
+      if (apiError.response) {
+        if (apiError.response.status === 401 || apiError.response.status === 403) {
+          setError("Acceso no autorizado o insuficiente para realizar la inversión.");
+          navigate('/');
+        } else if (apiError.response.data) {
+          setError(`Error: ${apiError.response.data}`);
         } else {
-            setError("No se pudo conectar con el servidor. Verifique su conexión.");
+          setError("Error al procesar la inversión. Intente más tarde.");
         }
+      } else {
+        setError("No se pudo conectar con el servidor. Verifique su conexión.");
+      }
     }
   };
 
@@ -171,51 +171,72 @@ const Inversion = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 4, maxWidth: 600, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
-            <Grid item>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid>
               <Avatar sx={{ width: 56, height: 56 }}>
                 {user?.nombre?.charAt(0).toUpperCase() || "U"}
               </Avatar>
             </Grid>
-            <Grid item sx={{ flexGrow: 1 }}>
-              <Typography variant="h6">
+            <Grid sx={{ flexGrow: 1 }}>
+              <Typography variant="h5">
                 {user?.nombre} {user?.apellido}
               </Typography>
-              <Typography variant="subtitle2" color="text.secondary">
+              <Typography variant="subtitle1" color="text.secondary">
                 {user?.email}
               </Typography>
-              <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 2 }}>
-                Saldo disponible: $
-                {typeof saldoVisual === "number" // Usar saldoVisual aquí
+              <Typography variant="subtitle2" color="text.secondary">
+                Saldo disponible: ${" "}
+                {typeof saldoVisual === "number"
                   ? saldoVisual.toLocaleString("es-AR", { minimumFractionDigits: 2 })
                   : "Cargando..."}
               </Typography>
             </Grid>
           </Grid>
-          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
-            Depósito a Plazo Fijo
-          </Typography>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 3 }}>
-            Ingresá el monto y el plazo deseado.
-          </Typography>
-
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12}>
+          <Paper
+            elevation={2}
+            sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Depósito a Plazo Fijo
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Ingresá el monto y el plazo deseado.
+            </Typography>
+          </Paper>
+          <Grid container spacing={2} sx={{ mb: 2 }} columns={12}>
+            <Grid gridColumn="span 12" sx={{ width: '100%' }}>
               <TextField
-                label="Monto a invertir"
+                label="Cuenta"
+                type="text"
+                value={user?.cuentas[0]?.numero || ""}
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} sx={{ mb: 2 }} columns={12}>
+            <Grid gridColumn="span 12" sx={{ width: '100%' }}>
+              <TextField
+                label="Importe"
                 type="number"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
                 fullWidth
                 InputProps={{ inputProps: { min: 1, max: saldoRealActual } }}
-                error={monto > saldoRealActual && monto !== ''}
-                helperText={monto > saldoRealActual && monto !== '' ? "El monto excede su saldo disponible." : ""} // Mensaje de ayuda
+                error={monto > saldoRealActual && monto !== ""}
+                helperText={
+                  monto > saldoRealActual && monto !== ""
+                    ? "El monto excede su saldo disponible."
+                    : ""
+                }
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid gridColumn="span 12" sx={{ width: '100%' }}>
               <FormControl fullWidth>
-                <InputLabel id="dias-label">Días</InputLabel>
+                <InputLabel id="dias-label">Plazo</InputLabel>
                 <Select
                   labelId="dias-label"
                   label="Días"
@@ -231,36 +252,38 @@ const Inversion = () => {
               </FormControl>
             </Grid>
           </Grid>
-
-          <Typography variant="subtitle1" sx={{ mb: 2 }}>
-            Monto estimado al final del plazo: <strong>${calcularGanancia().toLocaleString("es-AR", { minimumFractionDigits: 2 })}</strong>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+            Monto estimado a percibir: ${" "}
+            {calcularGanancia().toLocaleString("es-AR", { minimumFractionDigits: 2 })}
           </Typography>
-
           {error && (
             <Typography color="error" sx={{ mb: 2 }}>
               {error}
             </Typography>
           )}
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+          <Grid container spacing={2} columns={12}>
+            <Grid gridColumn="span 6">
               <Button variant="outlined" fullWidth onClick={() => navigate("/home")}>
                 Cancelar
               </Button>
             </Grid>
-            <Grid item xs={6}>
+            <Grid gridColumn="span 6">
               <Button
                 variant="contained"
                 fullWidth
                 onClick={handleInvertir}
-                disabled={monto > saldoRealActual || parseFloat(monto) <= 0 || isNaN(parseFloat(monto)) || !dias} // Deshabilitar si el monto excede o es inválido/vacío
+                disabled={
+                  monto > saldoRealActual ||
+                  parseFloat(monto) <= 0 ||
+                  isNaN(parseFloat(monto)) ||
+                  !dias
+                }
               >
                 Invertir
               </Button>
             </Grid>
           </Grid>
         </Paper>
-
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Inversión Confirmada</DialogTitle>
           <DialogContent sx={{ textAlign: "center" }}>

@@ -16,6 +16,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ThemeProvider } from "@mui/material/styles";
@@ -25,7 +27,8 @@ const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  const homePath = '/Home';
+  
   useEffect(() => {
     obtenerUsuarios();
   }, []);
@@ -50,15 +53,23 @@ const Usuarios = () => {
     }
   };
 
+  const crearUsuario = () => {
+    navigate('/crearUsuario');
+  };
+
+  const editarUsuario = (dni) => {
+    navigate(`/editarUsuario/${dni}`);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-            <Grid item xs={1}>
+        <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ width: 56, height: 56 }}>U</Avatar>
             </Grid>
-            <Grid item xs={11}>
+            <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                 Usuarios
               </Typography>
@@ -66,6 +77,16 @@ const Usuarios = () => {
                 Gestión de usuarios
               </Typography>
             </Grid>
+            <Box display="flex" flexDirection="column" gap={1}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PersonAddIcon />}
+                onClick={crearUsuario}
+              >
+                Usuario Nuevo
+              </Button>
+            </Box>
           </Grid>
 
           {error ? (
@@ -97,6 +118,16 @@ const Usuarios = () => {
                             }
                           </TableCell>
                           <TableCell>
+                            {/* Botón Editar */}
+                            <IconButton
+                              color="info"
+                              onClick={() => editarUsuario(usuario.dni)}
+                              aria-label="Editar usuario"
+                              sx={{ mr: 1 }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            {/* Botón Eliminar existente */}
                             <IconButton
                               color="error"
                               onClick={() => eliminarUsuario(usuario.dni)}
@@ -117,15 +148,16 @@ const Usuarios = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-
-              <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                <Grid item xs={2}>
+              {/* Botón Volver */}
+              <Grid container spacing={2} sx={{ marginTop: 2 }} columns={12}>
+                <Grid gridColumn="span 2">
                   <Button
                     variant="outlined"
                     color="secondary"
                     size="large"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate(homePath)}
+                    fullWidth
                     sx={{ height: '60px' }}
                   >
                     Volver
@@ -138,8 +170,6 @@ const Usuarios = () => {
       </Box>
     </ThemeProvider>
   );
-
-
 };
 
 export default Usuarios;

@@ -73,7 +73,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
         }
       })
       .then((res) => setCuentas(res.data || []))
-      .catch((error) => { 
+      .catch((error) => {
         console.error("Error al cargar cuentas destino:", error);
         setMensaje("Error al cargar cuentas destino. Asegúrate de tener permisos.");
       });
@@ -160,7 +160,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
       // Redirigir con señal para refrescar saldo real
       setTimeout(() => {
         setOpenDialog(false);
-        navigate("/home", { state: { refreshUser: true } }); 
+        navigate("/home", { state: { refreshUser: true } });
       }, 1500);
     } catch (error) {
       console.error("Error al transferir:", error);
@@ -184,20 +184,20 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
       <Box sx={{ padding: 3 }}>
         <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-            <Grid item>
+            <Grid>
               <Avatar sx={{ width: 56, height: 56 }}>
                 {user?.nombre?.charAt(0).toUpperCase() || 'U'}
               </Avatar>
             </Grid>
-            <Grid item sx={{ flexGrow: 1 }}>
-              <Typography variant="h6">
+            <Grid sx={{ flexGrow: 1 }}>
+              <Typography variant="h5">
                 {user?.nombre} {user?.apellido}
               </Typography>
-              <Typography variant="subtitle2" color="text.secondary">
+              <Typography variant="subtitle1" color="text.secondary">
                 {user?.email}
               </Typography>
-              <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 2 }}>
-                Saldo disponible: $
+              <Typography variant="subtitle2" color="text.secondary">
+                Saldo disponible: ${" "}
                 {typeof saldoDisponible === "number"
                   ? saldoDisponible.toLocaleString("es-AR", { minimumFractionDigits: 2 })
                   : "Cargando..."}
@@ -205,12 +205,21 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
             </Grid>
           </Grid>
 
-          <Typography variant="h5" gutterBottom>
-            Transferencia de dinero
-          </Typography>
+          <Paper
+            elevation={2}
+            sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Transferencia de dinero
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Ingresá los detalles de la transferencia.
+            </Typography>
+          </Paper>
 
-          <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-            <Grid item xs={12} sm={6} md={4}>
+          {/* Fila 1: Cuenta Origen y Monto a transferir */}
+          <Grid container spacing={2} sx={{ marginBottom: 2 }} columns={12}>
+            <Grid gridColumn="span 6" sx={{ width: '100%' }}>
               <TextField
                 label="Cuenta Origen"
                 value={cuentaOrigen?.numero ?? ""}
@@ -218,7 +227,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 InputProps={{ readOnly: true }}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid gridColumn="span 6" sx={{ width: '100%' }}>
               <TextField
                 label="Monto a transferir"
                 type="number"
@@ -229,8 +238,10 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               />
             </Grid>
           </Grid>
-          <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-            <Grid item xs={12} sm={4}>
+
+          {/* Fila 2: Cuenta Destino, DNI y Nombre Completo */}
+          <Grid container spacing={2} sx={{ marginBottom: 2 }} columns={12}>
+            <Grid gridColumn="span 4" sx={{ width: '100%' }}>
               <FormControl fullWidth>
                 <InputLabel id="select-cuenta-destino-label">Cuenta Destino</InputLabel>
                 <Select
@@ -247,7 +258,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid gridColumn="span 4" sx={{ width: '100%' }}>
               <TextField
                 label="DNI"
                 value={datosUsuarioDestino.dni}
@@ -255,7 +266,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 InputProps={{ readOnly: true }}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid gridColumn="span 4" sx={{ width: '100%' }}>
               <TextField
                 label="Nombre Completo"
                 value={`${datosUsuarioDestino.nombre} ${datosUsuarioDestino.apellido}`}
@@ -264,8 +275,15 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               />
             </Grid>
           </Grid>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+
+          {mensaje && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {mensaje}
+            </Typography>
+          )}
+          {/* Fila 3: Botones Cancelar y Transferir */}
+          <Grid container spacing={2} columns={12}>
+            <Grid gridColumn="span 6">
               <Button
                 variant="outlined"
                 fullWidth
@@ -276,22 +294,19 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 Cancelar
               </Button>
             </Grid>
-            <Grid item xs={6}>
+            <Grid gridColumn="span 6">
               <Button
                 variant="contained"
                 fullWidth
                 onClick={handleTransferir}
+                disabled={
+                  !monto || monto <= 0 || !cvuDestino || cvuDestino === cuentaOrigen?.numero
+                }
               >
                 Transferir
               </Button>
             </Grid>
           </Grid>
-
-          {mensaje && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {mensaje}
-            </Typography>
-          )}
         </Paper>
 
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
