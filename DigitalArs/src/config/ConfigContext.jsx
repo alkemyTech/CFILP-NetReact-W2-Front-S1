@@ -25,6 +25,14 @@ import {
   InputAdornment,
 } from "@mui/material";
 
+// Importaciones de los íconos desde el paquete correcto: @mui/icons-material
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EmailIcon from '@mui/icons-material/Email';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+// Si usas otros íconos en tu aplicación, impórtalos aquí también:
+// import OtherIcon from '@mui/icons-material/Other';
+
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { AuthContext } from "../servicios/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -39,11 +47,13 @@ const appTheme = createTheme({
 });
 
 export const ConfigContext = createContext(null);
+
 export const ConfigProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Objeto que contendrá todos los componentes de Material-UI centralizados
   const MuiComponents = {
     Box,
     Button,
@@ -68,8 +78,11 @@ export const ConfigProvider = ({ children }) => {
     TableRow,
     IconButton,
     InputAdornment,
+    AccountCircle: AccountCircleIcon,
+    Email: EmailIcon,
+    CreditCard: CreditCardIcon,
+    AttachMoney: AttachMoneyIcon,
   };
-
   const auth = { user };
   const router = { navigate, location };
   const api = axios.create({
@@ -82,7 +95,10 @@ export const ConfigProvider = ({ children }) => {
     getToken: () => localStorage.getItem('token'),
     formatCurrency: formatearARS,
   };
+
+  // Componente de diálogo de éxito (también consume MuiComponents)
   const SuccessDialog = ({ open, handleClose, message, icon }) => {
+    // Aquí desestructuras los componentes que necesitas del MuiComponents global
     const { Dialog, DialogTitle, DialogContent, DialogActions, Typography } = MuiComponents;
 
     return (
@@ -101,12 +117,12 @@ export const ConfigProvider = ({ children }) => {
     <ThemeProvider theme={appTheme}>
       <ConfigContext.Provider
         value={{
-          MuiComponents,
+          MuiComponents, // Exportamos el objeto MuiComponents completo
           auth,
           router,
           api,
           commonFunctions,
-          SuccessDialog,
+          SuccessDialog, // Exportamos el componente de diálogo de éxito
         }}
       >
         {children}

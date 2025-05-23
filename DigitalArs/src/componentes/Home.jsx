@@ -83,7 +83,7 @@ const Home = () => {
         }}
       >
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-          <Grid>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               sx={{
                 width: 56,
@@ -95,12 +95,11 @@ const Home = () => {
           </Grid>
           <Grid sx={{ flexGrow: 1 }}>
             <Typography variant="h5">{nombreCompleto}</Typography>
-            <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
             <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
               {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
             </Typography>
           </Grid>
-          <Grid>
+          <Box display="flex" flexDirection="column" gap={1}>
             <Button
               variant="contained"
               color="secondary"
@@ -109,9 +108,16 @@ const Home = () => {
             >
               Cerrar sesión
             </Button>
-          </Grid>
+            <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => navigate('/Perfil')}
+                aria-label="Perfil"
+              >
+                Perfil
+              </Button>
+          </Box>
         </Grid>
-
         <Paper
           elevation={2}
           sx={{ padding: 3, marginBottom: 3, backgroundColor: '#f5f5f5' }}

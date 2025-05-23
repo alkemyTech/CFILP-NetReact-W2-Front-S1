@@ -23,7 +23,7 @@ const Administrar = () => {
 
   const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
   const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
-  
+
   const nombreCompleto = useMemo(
     () => `${user?.nombre ?? ''} ${user?.apellido ?? ''}`.trim(),
     [user]
@@ -32,7 +32,7 @@ const Administrar = () => {
 
   useEffect(() => {
     if (user === null) {
-      return; 
+      return;
     }
 
     if (user && !esAdmin) {
@@ -59,43 +59,43 @@ const Administrar = () => {
   };
 
   if (!user || (user && !esAdmin)) {
-      return (
-          <Typography variant="h6" align="center" sx={{ mt: 5 }}>
-              {!user ? 'Cargando datos de usuario o verificando permisos...' : 'Redirigiendo: Acceso denegado.'}
-          </Typography>
-      );
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 5 }}>
+        {!user ? 'Cargando datos de usuario o verificando permisos...' : 'Redirigiendo: Acceso denegado.'}
+      </Typography>
+    );
   }
 
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
         <Paper
-        elevation={3}
-        sx={{
-          padding: 3,
-          maxWidth: 800,
-          margin: 'auto',
-          border: '1.5px solid #1976d2',
-          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
-        }}
-      >
+          elevation={3}
+          sx={{
+            padding: 3,
+            maxWidth: 800,
+            margin: 'auto',
+            border: '1.5px solid #1976d2',
+            backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+          }}
+        >
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
             <Grid sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar
-              sx={{
-                width: 56,
-                height: 56,
-                bgcolor: esAdmin ? 'error.main' : 'primary.main',
-              }}>
+                sx={{
+                  width: 56,
+                  height: 56,
+                  bgcolor: esAdmin ? 'error.main' : 'primary.main',
+                }}>
                 {user?.nombre?.charAt(0).toUpperCase() || 'U'}
               </Avatar>
             </Grid>
             <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{nombreCompleto}</Typography>
               <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
-            <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
-              {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
-            </Typography>
+              <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
+                {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
+              </Typography>
             </Grid>
             <Box display="flex" flexDirection="column" gap={1}>
               <Button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
 import { AuthContext } from "../../servicios/AuthContext";
 import { CheckCircle } from "@mui/icons-material";
@@ -23,6 +23,8 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
   const { getToken, formatCurrency } = commonFunctions;
   const location = router.location;
   const idTipo = location.state?.idTipo;
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const cuentaOrigen = user?.cuentas?.[0];
   const [cvuDestino, setCvuDestino] = useState("");
   const [monto, setMonto] = useState("");
@@ -186,27 +188,36 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 800,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+        }}
+      >
         {/* Encabezado con Avatar y Títulos */}
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-          <Grid>
-            <Avatar sx={{ width: 56, height: 56 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
               {user?.nombre?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
           </Grid>
           <Grid sx={{ flexGrow: 1 }}>
-            <Typography variant="h5">
-              {user?.nombre} {user?.apellido}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              {user?.email}
-            </Typography>
+            <Typography variant="h5"> {user?.nombre} {user?.apellido} </Typography>
             <Typography variant="subtitle2" color="text.secondary">
               Saldo disponible: {formatCurrency(saldoDisponible)}
             </Typography>
           </Grid>
         </Grid>
-                <Paper elevation={2} sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}>
+        <Paper elevation={2} sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}>
           <Typography variant="h5" gutterBottom>
             Transferencia de dinero
           </Typography>
@@ -273,15 +284,16 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
           </Grid>
         </Grid>
         {mensaje && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {mensaje}
-            </Typography>
-          )}
+          <Typography color="error" sx={{ mt: 2 }}>
+            {mensaje}
+          </Typography>
+        )}
         {/* Fila 3: Botones Cancelar y Transferir */}
         <Grid container spacing={2}>
           <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
             <Button
               variant="outlined"
+              color="error"
               fullWidth
               onClick={() => {
                 navigate(-1);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
 import { AuthContext } from "../../servicios/AuthContext";
 import { CheckCircle } from "@mui/icons-material";
@@ -24,6 +24,8 @@ const Inversion = () => {
   const location = router.location;
   const idTipo = location.state?.idTipo;
   const cuentaOrigen = user?.cuentas?.[0];
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const [monto, setMonto] = useState("");
   const [dias, setDias] = useState("");
   const [tna, setTna] = useState(0.32);
@@ -166,20 +168,30 @@ const Inversion = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
-        {/* Encabezado con Avatar y Títulos */}
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 800,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+        }}
+      >
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-          <Grid>
-            <Avatar sx={{ width: 56, height: 56 }}>
+          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
               {user?.nombre?.charAt(0).toUpperCase() || "U"}
             </Avatar>
           </Grid>
           <Grid sx={{ flexGrow: 1 }}>
             <Typography variant="h5">
               {user?.nombre} {user?.apellido}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              {user?.email}
             </Typography>
             <Typography variant="subtitle2" color="text.secondary">
               Saldo disponible: {formatCurrency(saldoVisual)}
@@ -258,7 +270,7 @@ const Inversion = () => {
         {/* Fila 2: Botones Cancelar y Invertir */}
         <Grid container spacing={2}>
           <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
-            <Button variant="outlined" fullWidth onClick={() => navigate("/home")}>
+            <Button variant="outlined" color="error" fullWidth onClick={() => navigate("/home")}>
               Cancelar
             </Button>
           </Grid>

@@ -150,8 +150,6 @@ const EditarUsuario = () => {
         ...(formData.password && { password: formData.password }), 
         roles: rolesParaEnviar
       };
-      
-      console.log("Payload que se enviará para edición:", payload);
 
       await axios.put(`https://localhost:7097/Usuario/${dni}`, payload, {
         headers: {

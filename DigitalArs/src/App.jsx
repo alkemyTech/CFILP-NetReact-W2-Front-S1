@@ -5,6 +5,7 @@ import { PrivateRoute } from './componentes/PrivateRoute';
 import { ConfigProvider } from './config/ConfigContext';
 import LoginForm from './componentes/Session/LoginForm';
 import Home from './componentes/Home';
+import Perfil from './componentes/Perfil';
 import Deposito from './componentes/Operaciones/Deposito';
 import Transferencia from './componentes/Operaciones/Transferencia';
 import Inversion from './componentes/Operaciones/Inversion';
@@ -29,6 +30,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <Home />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/perfil"
+              element={
+                <PrivateRoute>
+                  <Perfil />
                 </PrivateRoute>
               }
             />
@@ -90,7 +99,12 @@ function App() {
             />
             <Route
               path="/EditarCuenta/:id"
-              element={<EditarCuenta />} />
+              element={
+                <PrivateRoute>
+                  <EditarCuenta />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/cuentas"
               element={
