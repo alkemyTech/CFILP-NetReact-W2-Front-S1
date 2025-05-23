@@ -1,5 +1,4 @@
-// componentes/Administrar.jsx
-import React, { useMemo, useContext, useEffect } from 'react'; // Importar useContext y useEffect
+import React, { useMemo, useContext, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
@@ -14,15 +13,14 @@ import {
   Avatar,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { theme } from '../utils/theme';
-import { AuthContext } from '../servicios/AuthContext'; // Importar AuthContext
+import { theme } from '../../utils/theme';
+import { AuthContext } from '../../servicios/AuthContext'; // Importar AuthContext
 
-const Administrar = () => { // Eliminar '{ user }' de aquí
+const Administrar = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useContext(AuthContext); // Obtener 'user' del contexto
+  const { user } = useContext(AuthContext);
 
-  // Asegúrate de que el usuario y los roles estén cargados antes de continuar
   const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
   const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   
@@ -32,16 +30,11 @@ const Administrar = () => { // Eliminar '{ user }' de aquí
   );
   const email = user?.email ?? 'Correo no disponible';
 
-  // Efecto para manejar la redirección si el usuario no es admin o no está cargado
   useEffect(() => {
-    // Si el usuario aún no se ha cargado (user es null)
     if (user === null) {
-      // Podrías mostrar un spinner o un mensaje de carga.
-      // Si el AuthContext maneja la carga inicial, esto no debería ser un problema prolongado.
       return; 
     }
 
-    // Si el usuario está cargado pero no es administrador
     if (user && !esAdmin) {
       enqueueSnackbar('Acceso denegado: autoridad insuficiente', { variant: 'error' });
       navigate('/home');
@@ -49,16 +42,7 @@ const Administrar = () => { // Eliminar '{ user }' de aquí
   }, [user, esAdmin, navigate, enqueueSnackbar]); // Dependencias del useEffect
 
   const handleLogout = () => {
-    // Es mejor usar la función logout del servicio que limpia todo correctamente
-    // Aquí podrías necesitar traer `setUser` del contexto si quieres limpiar el estado local
-    // const { setUser } = useContext(AuthContext);
-    // logout();
-    // setUser(null);
-    // navigate('/');
-    // Ya que AuthContext maneja el logout global, y esto es solo un botón
-    // del componente, no hace falta que `Administrar` se preocupe de la lógica de `setUser`.
-    // Simplemente redirecciona al login.
-    localStorage.clear(); // O usar la función logout del servicio.
+    localStorage.clear();
     navigate('/');
   };
 
@@ -74,7 +58,6 @@ const Administrar = () => { // Eliminar '{ user }' de aquí
     navigate('/transacciones');
   };
 
-  // Mostrar un mensaje de carga mientras el usuario se carga o se verifica su rol
   if (!user || (user && !esAdmin)) {
       return (
           <Typography variant="h6" align="center" sx={{ mt: 5 }}>

@@ -16,39 +16,68 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
-import { theme } from '../utils/theme'; // Asegúrate de que la ruta sea correcta
+import { theme } from '../../../utils/theme';
 
-const CrearUsuario = () => {
+const EditarUsuario = () => {
   const navigate = useNavigate();
+  const { dni } = useParams();
   const [formData, setFormData] = useState({
     dni: '',
     nombre: '',
     apellido: '',
     email: '',
     password: '',
-    roles: [], // Para almacenar los IDs de los roles seleccionados
+    roles: [],
   });
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
-    // Cargar roles disponibles al montar el componente
-    const fetchRoles = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
       try {
-        const response = await axios.get('https://localhost:7097/Rol');
-        setRolesDisponibles(response.data || []);
+        const rolesResponse = await axios.get('https://localhost:7097/Rol');
+        setRolesDisponibles(rolesResponse.data || []);
+
+        if (dni) {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+            setLoading(false);
+            navigate('/');
+            return;
+          }
+          const userResponse = await axios.get(`https://localhost:7097/Usuario/${dni}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          const userData = userResponse.data;
+
+          setFormData({
+            dni: userData.dni || '',
+            nombre: userData.nombre || '',
+            apellido: userData.apellido || '',
+            email: userData.email || '',
+            password: '',
+            roles: userData.roles?.map(rol => rol.id) || [],
+          });
+        }
       } catch (err) {
-        console.error("Error al cargar roles:", err);
-        setError("Error al cargar los roles disponibles.");
+        console.error("Error al cargar datos:", err.response?.data || err.message);
+        setError(`Error al cargar los datos: ${err.response?.data || 'Verifica la conexión.'}`);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchRoles();
-  }, []);
+    fetchData();
+  }, [dni, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +85,6 @@ const CrearUsuario = () => {
       ...prev,
       [name]: value
     }));
-    // Limpiar errores de validación para el campo modificado
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -65,7 +93,7 @@ const CrearUsuario = () => {
   const handleRolesChange = (e) => {
     setFormData(prev => ({
       ...prev,
-      roles: e.target.value // Material-UI Select con multiple maneja el array automáticamente
+      roles: e.target.value
     }));
     if (validationErrors.roles) {
       setValidationErrors(prev => ({ ...prev, roles: '' }));
@@ -80,8 +108,7 @@ const CrearUsuario = () => {
     if (!formData.apellido) errors.apellido = 'El apellido es obligatorio.';
     if (!formData.email) errors.email = 'El email es obligatorio.';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'El email no es válido.';
-    if (!formData.password) errors.password = 'La contraseña es obligatoria.';
-    else if (formData.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres.';
+    if (formData.password && formData.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres si se va a cambiar.';
     if (formData.roles.length === 0) errors.roles = 'Debe seleccionar al menos un rol.';
 
     setValidationErrors(errors);
@@ -90,15 +117,24 @@ const CrearUsuario = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Limpiar errores previos
-    setValidationErrors({}); // Limpiar errores de validación previos
+    setError('');
+    setValidationErrors({});
 
     if (!validateForm()) {
       return;
     }
 
+    setLoading(true);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+      navigate('/');
+      return;
+    }
+
     try {
-      const rolesSeleccionados = formData.roles.map(idSeleccionado => {
+      const rolesParaEnviar = formData.roles.map(idSeleccionado => {
         const rolCompleto = rolesDisponibles.find(role => role.id === idSeleccionado);
         return {
           id: idSeleccionado,
@@ -111,32 +147,35 @@ const CrearUsuario = () => {
         nombre: formData.nombre,
         apellido: formData.apellido,
         email: formData.email,
-        password: formData.password,
-        roles: rolesSeleccionados
+        ...(formData.password && { password: formData.password }), 
+        roles: rolesParaEnviar
       };
+      
+      console.log("Payload que se enviará para edición:", payload);
 
-      setLoading(true);
-
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setMensaje("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
-        navigate('/');
-        return;
-      }
-      await axios.post('https://localhost:7097/Usuario', payload, {
+      await axios.put(`https://localhost:7097/Usuario/${dni}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      alert('Usuario creado exitosamente!');
+      alert('Usuario actualizado exitosamente!');
       navigate('/usuarios');
     } catch (err) {
-      console.error("Error al crear usuario:", err.response?.data || err.message);
-      setError(`Error al crear el usuario: ${err.response?.data || 'Verifica la conexión o los datos ingresados.'}`);
+      console.error("Error al actualizar usuario:", err.response?.data || err.message);
+      setError(`Error al actualizar el usuario: ${JSON.stringify(err.response?.data || 'Verifica la conexión o los datos ingresados.')}`);
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading && dni) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>Cargando usuario...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -144,14 +183,14 @@ const CrearUsuario = () => {
         <Paper elevation={3} sx={{ padding: 3, maxWidth: 600, margin: "auto" }}>
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
             <Grid gridColumn="span 1">
-              <Avatar sx={{ width: 56, height: 56 }}>+</Avatar> {/* Puedes usar un ícono de agregar usuario */}
+              <Avatar sx={{ width: 56, height: 56 }}>⚙️</Avatar> {/* Ícono de edición */}
             </Grid>
             <Grid gridColumn="span 11">
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Crear Nuevo Usuario
+                Editar Usuario
               </Typography>
               <Typography variant="subtitle2" color="text.secondary">
-                Ingresa los datos del nuevo usuario
+                Modifica los datos del usuario existente
               </Typography>
             </Grid>
           </Grid>
@@ -174,6 +213,7 @@ const CrearUsuario = () => {
                   helperText={validationErrors.dni}
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                   autoComplete="dni"
+                  disabled
                 />
               </Grid>
               <Grid gridColumn="span 6" sx={{ width: '100%' }}>
@@ -244,14 +284,14 @@ const CrearUsuario = () => {
               <Grid gridColumn="span 6" sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
-                  label="Contraseña"
+                  label="Contraseña (dejar vacío para no cambiar)"
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
                   error={!!validationErrors.password}
                   helperText={validationErrors.password}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                 />
               </Grid>
             </Grid>
@@ -262,28 +302,30 @@ const CrearUsuario = () => {
                   variant="outlined"
                   color="secondary"
                   startIcon={<ArrowBackIcon />}
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate('/usuarios')}
                   disabled={loading}
                 >
                   Cancelar
                 </Button>
               </Grid>
-              <Grid gridColumn="span 6"></Grid>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                startIcon={<SaveIcon />}
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Guardar Usuario'}
-              </Button>
+              <Grid gridColumn="span 6">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
+                  sx={{ float: 'right' }}
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Guardar Cambios'}
+                </Button>
+              </Grid>
             </Grid>
           </Box>
         </Paper>
-      </Box >
-    </ThemeProvider >
+      </Box>
+    </ThemeProvider>
   );
 };
 
-export default CrearUsuario;
+export default EditarUsuario;
