@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { AuthContext } from '../../servicios/AuthContext';
 
 const Transacciones = () => {
   const { MuiComponents, api, router, commonFunctions } = useContext(ConfigContext);
@@ -21,9 +21,13 @@ const Transacciones = () => {
   } = MuiComponents;
   const { navigate } = router;
   const { getToken } = commonFunctions;
+  const { user } = useContext(AuthContext);
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const [transacciones, setTransacciones] = useState([]);
   const [error, setError] = useState("");
   const adminPath = '/Administrar';
+  const titulo = 'Transacciones';
 
   useEffect(() => {
     obtenerTransacciones();
@@ -59,30 +63,49 @@ const Transacciones = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Paper elevation={3} sx={{ padding: 3, maxWidth: 1000, margin: "auto", height: '80vh', display: 'flex', flexDirection: 'column' }}>
-        <Grid container alignItems="center" justifyContent="space-between" sx={{ marginBottom: 3 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 1000,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+          height: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
           <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar sx={{ width: 56, height: 56, marginRight: 2 }}>T</Avatar>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Transacciones
-              </Typography>
-              <Typography variant="subtitle2" color="text.secondary">
-                Historial de movimientos entre cuentas
-              </Typography>
-            </Box>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
+              {titulo.charAt(0).toUpperCase()}
+            </Avatar>
           </Grid>
-          <Grid>
+          <Grid sx={{ flexGrow: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+              {titulo}
+            </Typography>
+            <Typography variant="subtitle2" color="text.secondary">
+              Historial de movimientos entre cuentas
+            </Typography>
+          </Grid>
+          <Box display="flex" flexDirection="column" gap={1}>
             <Button
               variant="outlined"
-              color="secondary"
+              color="primary"
               size="medium"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(adminPath)}
             >
               Volver
             </Button>
-          </Grid>
+          </Box>
         </Grid>
         {error ? (
           <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
@@ -99,44 +122,53 @@ const Transacciones = () => {
             <Table stickyHeader>
               <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
                 <TableRow>
-                  <TableCell><strong>Fecha</strong></TableCell>
-                  <TableCell><strong>Cuenta Origen</strong></TableCell>
-                  <TableCell><strong>Usuario Origen</strong></TableCell>
-                  <TableCell><strong>Cuenta Destino</strong></TableCell>
-                  <TableCell><strong>Usuario Destino</strong></TableCell>
-                  <TableCell><strong>Tipo</strong></TableCell>
-                  <TableCell><strong>Monto</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Fecha</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Cuenta Origen</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Usuario Origen</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Cuenta Destino</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Usuario Destino</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Tipo</strong></TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}><strong>Monto</strong></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {transacciones.length > 0 ? (
-                  transacciones.map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell>{new Date(tx.fecha).toLocaleString()}</TableCell>
-                      <TableCell>{tx.cuentaOrigen?.numero ?? "N/A"}</TableCell>
-                      <TableCell>
-                        {tx.cuentaOrigen?.usuario
-                          ? `${tx.cuentaOrigen.usuario.nombre} ${tx.cuentaOrigen.usuario.apellido}`
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>{tx.cuentaDestino?.numero ?? "N/A"}</TableCell>
-                      <TableCell>
-                        {tx.cuentaDestino?.usuario
-                          ? `${tx.cuentaDestino.usuario.nombre} ${tx.cuentaDestino.usuario.apellido}`
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>{tx.tipo?.nombre ?? "N/A"}</TableCell>
-                      <TableCell>
-                        {tx.monto?.toLocaleString('es-AR', {
-                          style: 'currency',
-                          currency: 'ARS'
-                        }) ?? 0}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  transacciones.map((tx) => {
+                    // Determinar si la cuenta origen es "especial" (ej. Western Union, Tarjeta Débito)
+                    const isSpecialOriginAccount = tx.cuentaOrigen?.numero < 100;
+
+                    return (
+                      <TableRow key={tx.id}>
+                        <TableCell sx={{ textAlign: 'center' }}>{new Date(tx.fecha).toLocaleString()}</TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {isSpecialOriginAccount ? "" : (tx.cuentaOrigen?.numero ?? "N/A")}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {tx.cuentaOrigen?.usuario
+                            ? (isSpecialOriginAccount
+                              ? tx.cuentaOrigen.usuario.nombre
+                              : `${tx.cuentaOrigen.usuario.nombre} ${tx.cuentaOrigen.usuario.apellido}`)
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>{tx.cuentaDestino?.numero ?? "N/A"}</TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {tx.cuentaDestino?.usuario
+                            ? `${tx.cuentaDestino.usuario.nombre} ${tx.cuentaDestino.usuario.apellido}`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: 'center', fontWeight: 'bold' }}>{tx.tipo?.nombre ?? "N/A"}</TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {tx.monto?.toLocaleString('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS'
+                          }) ?? 0}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={7} align="center">
                       No hay transacciones registradas.
                     </TableCell>
                   </TableRow>

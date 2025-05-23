@@ -72,10 +72,24 @@ const Home = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: 'auto' }}>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 800,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+        }}
+      >
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
           <Grid>
-            <Avatar sx={{ width: 56, height: 56 }}>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
               {user?.nombre?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
           </Grid>
@@ -104,7 +118,7 @@ const Home = () => {
         >
           <Typography variant="h6" gutterBottom>Saldo actual</Typography>
           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-            {formatCurrency(saldo)} {/* Usando formatCurrency del contexto */}
+            {formatCurrency(saldo)}
           </Typography>
         </Paper>
 
@@ -152,7 +166,7 @@ const Home = () => {
             <Button
               fullWidth
               variant="contained"
-              color="primary"
+              color="warning"
               size="large"
               startIcon={<AdminPanelSettingsIcon />}
               onClick={handleAdmin}

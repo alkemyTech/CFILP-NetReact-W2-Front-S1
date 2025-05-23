@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
-import { useContext } from "react";
+import { AuthContext } from "../../servicios/AuthContext"; // Importar AuthContext para refetchUser
 import { CheckCircle } from "@mui/icons-material";
 
 const Deposito = ({ saldo: propSaldo, setSaldo }) => {
-  const { MuiComponents, appTheme, auth, router, api, commonFunctions, SuccessDialog } = useContext(ConfigContext);
+  const { MuiComponents, appTheme, api, commonFunctions, SuccessDialog, router } = useContext(ConfigContext);
+  const { user, refetchUser } = useContext(AuthContext); // Usar refetchUser de AuthContext
   const { Box, Button, Grid, Paper, TextField, Typography, MenuItem, Select, InputLabel, FormControl, Avatar } = MuiComponents;
-  const { user } = auth;
   const { navigate, location } = router;
   const { getToken, formatCurrency } = commonFunctions;
   const cuentaDestino = user?.cuentas?.[0];
@@ -15,12 +15,12 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
   const [metodo, setMetodo] = useState("");
   const [monto, setMonto] = useState("");
   const [mensaje, setMensaje] = useState("");
-  const [saldoDisponible, setSaldoDisponible] = useState(() => {
-    return Number(propSaldo) || Number(cuentaDestino?.saldo) || 0;
-  });
+  const saldoRealActual = Number(propSaldo) || Number(cuentaDestino?.saldo) || 0;
+  const [saldoVisual, setSaldoVisual] = useState(saldoRealActual);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogIcon, setDialogIcon] = useState(null);
+  const [cuentasOrigenDisponibles, setCuentasOrigenDisponibles] = useState([]);
 
   useEffect(() => {
     if (!user || !user.cuentas || user.cuentas.length === 0) {
@@ -29,33 +29,82 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
   }, [user, navigate]);
 
   useEffect(() => {
-    const saldoInicial = Number(propSaldo) || Number(cuentaDestino?.saldo) || 0;
-    setSaldoDisponible(saldoInicial);
-  }, [propSaldo, cuentaDestino]);
+    setSaldoVisual(saldoRealActual);
+  }, [saldoRealActual]);
 
   useEffect(() => {
     if (!idTipo) {
-      setError("Falta información de la inversión. Redirigiendo...");
+      setError("Falta información para el depósito. Redirigiendo...");
       setTimeout(() => navigate("/home"), 2000);
     }
   }, [idTipo, navigate]);
 
+  useEffect(() => {
+    const montoNum = parseFloat(monto);
+    if (!isNaN(montoNum) && montoNum >= 0) {
+      setSaldoVisual(saldoRealActual + montoNum);
+    } else {
+      setSaldoVisual(saldoRealActual);
+    }
+    setMensaje("");
+  }, [monto, saldoRealActual]);
+
+  useEffect(() => {
+    const fetchCuentasOrigen = async () => {
+      try {
+        const token = getToken();
+        if (!token) {
+          console.warn("No se encontró token de autenticación para cargar cuentas de origen.");
+          return;
+        }
+
+        const response = await api.get("https://localhost:7097/Cuenta", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const filteredAccounts = response.data
+          .filter(cuenta => cuenta.numero < 100)
+          .map(cuenta => ({
+            numero: cuenta.numero.toString(),
+            nombreUsuario: cuenta.usuario?.nombre || `Cuenta ${cuenta.numero}`
+          }));
+
+        setCuentasOrigenDisponibles(filteredAccounts);
+      } catch (err) {
+        console.error("Error al cargar cuentas de origen:", err);
+        setError("Error al cargar las opciones de depósito.");
+      }
+    };
+
+    fetchCuentasOrigen();
+  }, [api, getToken]);
+
   const handleDepositar = async () => {
+    setMensaje("");
+
     const montoDeposito = parseFloat(monto);
 
-    if (!metodo || !monto || montoDeposito <= 0) {
-      setMensaje("Complete todos los campos correctamente.");
+    if (!metodo || !monto || montoDeposito <= 0 || isNaN(montoDeposito)) {
+      setMensaje("Complete todos los campos correctamente con un monto positivo.");
+      return;
+    }
+
+    if (!cuentaDestino || !cuentaDestino.numero) {
+      setMensaje("No se pudo obtener la cuenta de destino para el depósito.");
       return;
     }
 
     const payload = {
-      ctaOrigen: null,
-      ctaDestino: cuentaDestino?.numero,
+      ctaOrigen: parseInt(metodo),
+      ctaDestino: cuentaDestino.numero,
       idTipo: parseInt(idTipo),
       monto: montoDeposito,
       fecha: new Date().toISOString(),
-      descripcion: `Depósito por ${metodo}`,
+      descripcion: `Depósito desde cuenta ${metodo}`,
     };
+    console.log("Payload:", payload);
 
     const token = getToken();
     if (!token) {
@@ -71,28 +120,38 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
         },
       });
 
-      setDialogMessage(`Depósito de $${montoDeposito.toLocaleString("es-AR")} realizado con éxito mediante ${metodo}`);
-      setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />); // CheckCircle se usa directamente aquí
+      await refetchUser();
+
+      const cuentaOrigenSeleccionada = cuentasOrigenDisponibles.find(c => c.numero === metodo);
+      const nombreOrigenMostrar = cuentaOrigenSeleccionada ? cuentaOrigenSeleccionada.nombreUsuario : `Cuenta ${metodo}`;
+
+      setDialogMessage(`Depósito de ${formatCurrency(montoDeposito)} realizado con éxito desde ${nombreOrigenMostrar}.`);
+      setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
       setOpenDialog(true);
+
+      // Resetear campos del formulario
       setMonto("");
       setMetodo("");
       setMensaje("");
-      setSaldoDisponible((prev) => prev + montoDeposito);
-      if (setSaldo) setSaldo((prev) => prev + montoDeposito);
 
       setTimeout(() => {
         setOpenDialog(false);
         navigate("/home", { state: { refreshUser: true } });
       }, 1500);
+
     } catch (apiError) {
       console.error("Error al depositar:", apiError);
       if (apiError.response) {
         if (apiError.response.status === 401 || apiError.response.status === 403) {
           setMensaje("Acceso no autorizado para realizar el depósito.");
           navigate("/");
-        } else if (apiError.response.data) {
+        } else if (apiError.response.data && typeof apiError.response.data === 'string') {
           setMensaje(`Error: ${apiError.response.data}`);
-        } else {
+        } else if (apiError.response.data && apiError.response.data.errors) {
+          const errorMessages = Object.values(apiError.response.data.errors).flat().join(". ");
+          setMensaje(`Error: ${errorMessages}`);
+        }
+        else {
           setMensaje("Error al procesar el depósito. Intente más tarde.");
         }
       } else {
@@ -100,6 +159,14 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
       }
     }
   };
+
+  if (!user) {
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 5 }}>
+        Cargando datos de usuario...
+      </Typography>
+    );
+  }
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -118,8 +185,7 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
               {user?.email}
             </Typography>
             <Typography variant="subtitle2" color="text.secondary">
-              Saldo disponible: $
-              {formatCurrency(saldoDisponible)}
+              Saldo disponible: {formatCurrency(saldoVisual)}
             </Typography>
           </Grid>
         </Grid>
@@ -128,26 +194,27 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
             Ingreso de dinero
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            Seleccioná el método de depósito e ingresá un monto para la cuenta{" "}
+            Seleccioná la cuenta de origen e ingresá un monto para la cuenta{" "}
             <Typography component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
-              {user?.cuentas[0]?.numero || ""}
+              {cuentaDestino?.numero || ""}
             </Typography>
           </Typography>
         </Paper>
         <Grid container spacing={2} sx={{ marginBottom: 2 }}>
           <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 10.66px)' } }}>
             <FormControl fullWidth>
-              <InputLabel id="select-metodo-label">Método de depósito</InputLabel>
+              <InputLabel id="select-metodo-label">Cuenta de Origen</InputLabel>
               <Select
                 labelId="select-metodo-label"
                 value={metodo}
-                label="Método de depósito"
+                label="Cuenta de Origen"
                 onChange={(e) => setMetodo(e.target.value)}
               >
-                <MenuItem value="Mercado Pago">Mercado Pago</MenuItem>
-                <MenuItem value="Tarjeta Débito">Tarjeta Débito</MenuItem>
-                <MenuItem value="Tarjeta Crédito">Tarjeta Crédito</MenuItem>
-                <MenuItem value="Efectivo">Efectivo</MenuItem>
+                {cuentasOrigenDisponibles.map((cuenta) => (
+                  <MenuItem key={cuenta.numero} value={cuenta.numero}>
+                    {`${cuenta.nombreUsuario}`}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
@@ -167,6 +234,11 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
             {mensaje}
           </Typography>
         )}
+        {error && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
+        )}
         <Grid container spacing={2}>
           <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
             <Button
@@ -182,9 +254,9 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
               variant="contained"
               fullWidth
               onClick={handleDepositar}
-              disabled={!monto || monto <= 0 || !metodo}
+              disabled={!monto || parseFloat(monto) <= 0 || !metodo}
             >
-              Depositar
+              Ingresar
             </Button>
           </Grid>
         </Grid>

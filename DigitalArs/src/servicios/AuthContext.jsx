@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         setUser(storedUser);
       } catch (e) {
         console.warn('Error al parsear usuario desde localStorage:', e);
-        localStorage.removeItem('user'); // Limpiar si hay un error de parseo
+        localStorage.removeItem('user');
       }
     }
   }, []);

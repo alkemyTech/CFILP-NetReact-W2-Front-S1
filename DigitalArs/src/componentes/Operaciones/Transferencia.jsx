@@ -5,7 +5,7 @@ import { CheckCircle } from "@mui/icons-material";
 
 const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
   const { MuiComponents, api, router, commonFunctions, SuccessDialog } = useContext(ConfigContext);
-  const { user } = useContext(AuthContext); // Sigue obteniendo user de AuthContext
+  const { user } = useContext(AuthContext);
   const {
     Box,
     Button,

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EditIcon from '@mui/icons-material/Edit';
+import { AuthContext } from '../../servicios/AuthContext';
 
 const Cuentas = () => {
   const { MuiComponents, api, router, commonFunctions } = useContext(ConfigContext);
@@ -24,9 +25,13 @@ const Cuentas = () => {
   } = MuiComponents;
   const { navigate } = router;
   const { getToken, formatCurrency } = commonFunctions;
+  const { user } = useContext(AuthContext);
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const [cuentas, setCuentas] = useState([]);
   const [error, setError] = useState("");
   const adminPath = '/Administrar';
+  const titulo = 'Cuentas';
 
   useEffect(() => {
     obtenerCuentas();
@@ -91,14 +96,30 @@ const Cuentas = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: "auto" }}>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 800,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+        }}
+      >
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
           <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar sx={{ width: 56, height: 56 }}>C</Avatar>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
+              {titulo.charAt(0).toUpperCase()}
+            </Avatar>
           </Grid>
           <Grid sx={{ flexGrow: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-              Cuentas
+              {titulo}
             </Typography>
             <Typography variant="subtitle2" color="text.secondary">
               Gestión de cuentas
@@ -124,29 +145,29 @@ const Cuentas = () => {
               <Table>
                 <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
                   <TableRow>
-                    <TableCell><strong>Número</strong></TableCell>
-                    <TableCell><strong>DNI</strong></TableCell>
-                    <TableCell><strong>Nombre(s) y Apellido(s)</strong></TableCell>
-                    <TableCell><strong>Saldo</strong></TableCell>
-                    <TableCell><strong>Acciones</strong></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><strong>Número</strong></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><strong>DNI</strong></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><strong>Nombre(s) y Apellido(s)</strong></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><strong>Saldo</strong></TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}><strong>Acciones</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {cuentas.length > 0 ? (
                     cuentas.map((cuenta) => (
                       <TableRow key={cuenta.numero}>
-                        <TableCell>{cuenta.numero}</TableCell>
-                        <TableCell>{cuenta.dni}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>{cuenta.numero}</TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>{cuenta.dni}</TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
                           {cuenta.usuario && cuenta.usuario.nombre && cuenta.usuario.apellido
                             ? `${cuenta.usuario.nombre} ${cuenta.usuario.apellido}`
                             : "Sin usuario"
                           }
                         </TableCell>
-                        <TableCell>
-                            {formatCurrency(cuenta.saldo)}
+                        <TableCell sx={{ textAlign: 'center' }}>
+                          {formatCurrency(cuenta.saldo)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ textAlign: 'center' }}>
                           {/* Botón Editar */}
                           <IconButton
                             color="info"
@@ -169,6 +190,7 @@ const Cuentas = () => {
                     ))
                   ) : (
                     <TableRow>
+                      {/* Asegúrate de que colSpan abarque todas las columnas, en este caso 5 */}
                       <TableCell colSpan={5} align="center">
                         No hay cuentas para mostrar.
                       </TableCell>
@@ -182,7 +204,7 @@ const Cuentas = () => {
               <Grid gridColumn="span 2">
                 <Button
                   variant="outlined"
-                  color="secondary"
+                  color="primary"
                   size="large"
                   startIcon={<ArrowBackIcon />}
                   onClick={() => navigate(adminPath)}

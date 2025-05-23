@@ -69,19 +69,33 @@ const Administrar = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 800, margin: 'auto' }}>
+        <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          maxWidth: 800,
+          margin: 'auto',
+          border: '1.5px solid #1976d2',
+          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+        }}
+      >
           <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
             <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ width: 56, height: 56 }}>
+              <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+              }}>
                 {user?.nombre?.charAt(0).toUpperCase() || 'U'}
               </Avatar>
             </Grid>
             <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{nombreCompleto}</Typography>
               <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
-              <Typography variant="subtitle2" color="text.secondary">
-                {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
-              </Typography>
+            <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
+              {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
+            </Typography>
             </Grid>
             <Box display="flex" flexDirection="column" gap={1}>
               <Button
