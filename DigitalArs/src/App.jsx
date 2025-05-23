@@ -14,98 +14,111 @@ import CrearUsuario from './componentes/Administrador/Usuario/CrearUsuario';
 import EditarUsuario from './componentes/Administrador/Usuario/EditarUsuario';
 import Cuentas from './componentes/Administrador/Cuentas';
 import Transacciones from './componentes/Administrador/Transacciones';
+import CrearCuenta from './componentes/Administrador/Usuario/CrearCuenta';
+import EditarCuenta from './componentes/Administrador/Usuario/EditarCuenta';
 
 function App() {
   return (
-      <AuthProvider>
-        <Router>
-          <ConfigProvider>
-            <Routes>
-              <Route path="/" element={<LoginForm />} />
-              <Route
-                path="/home"
-                element={
-                  <PrivateRoute>
-                    <Home />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/transferencia"
-                element={
-                  <PrivateRoute>
-                    <Transferencia />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/inversion"
-                element={
-                  <PrivateRoute>
-                    <Inversion />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/administrar"
-                element={
-                  <PrivateRoute>
-                    <Administrar />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/usuarios"
-                element={
-                  <PrivateRoute>
-                    <Usuarios />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/crearUsuario"
-                element={
-                  <PrivateRoute>
-                    <CrearUsuario />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/editarUsuario/:dni"
-                element={
-                  <PrivateRoute>
-                    <EditarUsuario />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/cuentas"
-                element={
-                  <PrivateRoute>
-                    <Cuentas />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/transacciones"
-                element={
-                  <PrivateRoute>
-                    <Transacciones />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/deposito"
-                element={
-                  <PrivateRoute>
-                    <Deposito />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
-          </ConfigProvider>
-        </Router>
-      </AuthProvider>
+    <AuthProvider>
+      <Router>
+        <ConfigProvider>
+          <Routes>
+            <Route path="/" element={<LoginForm />} />
+            <Route
+              path="/home"
+              element={
+                <PrivateRoute>
+                  <Home />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/transferencia"
+              element={
+                <PrivateRoute>
+                  <Transferencia />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/inversion"
+              element={
+                <PrivateRoute>
+                  <Inversion />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/administrar"
+              element={
+                <PrivateRoute>
+                  <Administrar />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/usuarios"
+              element={
+                <PrivateRoute>
+                  <Usuarios />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/crearUsuario"
+              element={
+                <PrivateRoute>
+                  <CrearUsuario />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/CrearCuenta"
+              element={
+                <PrivateRoute>
+                  <CrearCuenta />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/editarUsuario/:dni"
+              element={
+                <PrivateRoute>
+                  <EditarUsuario />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/EditarCuenta/:id"
+              element={<EditarCuenta />} />
+            <Route
+              path="/cuentas"
+              element={
+                <PrivateRoute>
+                  <Cuentas />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/transacciones"
+              element={
+                <PrivateRoute>
+                  <Transacciones />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/deposito"
+              element={
+                <PrivateRoute>
+                  <Deposito />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </ConfigProvider>
+      </Router>
+    </AuthProvider>
   );
 }
 

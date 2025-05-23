@@ -87,11 +87,11 @@ const Cuentas = () => {
   };
 
   const crearCuenta = () => {
-    navigate('/crearCuentas');
+    navigate('/CrearCuenta');
   };
 
   const editarCuenta = (numero) => {
-    navigate(`/editarCuentas/${numero}`);
+    navigate(`/EditarCuenta/${numero}`);
   };
 
   return (
