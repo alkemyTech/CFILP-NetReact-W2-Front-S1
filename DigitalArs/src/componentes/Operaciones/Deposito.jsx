@@ -1,18 +1,43 @@
 import { useMemo, useState, useEffect, useContext } from "react";
 import { ConfigContext } from "../../config/ConfigContext";
-import { AuthContext } from "../../servicios/AuthContext"; // Importar AuthContext para refetchUser
+import { AuthContext } from "../../servicios/AuthContext";
 import { CheckCircle } from "@mui/icons-material";
 
 const Deposito = ({ saldo: propSaldo, setSaldo }) => {
-  const { MuiComponents, appTheme, api, commonFunctions, SuccessDialog, router } = useContext(ConfigContext);
-  const { user, refetchUser } = useContext(AuthContext); // Usar refetchUser de AuthContext
-  const { Box, Button, Grid, Paper, TextField, Typography, MenuItem, Select, InputLabel, FormControl, Avatar } = MuiComponents;
+  const {
+    MuiComponents,
+    appTheme,
+    api,
+    commonFunctions,
+    SuccessDialog,
+    router,
+  } = useContext(ConfigContext);
+  const { user, refetchUser } = useContext(AuthContext);
+  const {
+    Box,
+    Button,
+    Grid,
+    Paper,
+    TextField,
+    Typography,
+    MenuItem,
+    Select,
+    InputLabel,
+    FormControl,
+    Avatar,
+  } = MuiComponents;
   const { navigate, location } = router;
   const { getToken, formatCurrency } = commonFunctions;
+
   const cuentaDestino = user?.cuentas?.[0];
   const idTipo = location.state?.idTipo;
-  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
-  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
+
+  const roleNames = useMemo(
+    () => user?.roles?.map((rol) => rol.nombre) ?? [],
+    [user]
+  );
+  const esAdmin = useMemo(() => roleNames.includes("Administrador"), [roleNames]);
+
   const [error, setError] = useState("");
   const [metodo, setMetodo] = useState("");
   const [monto, setMonto] = useState("");
@@ -56,7 +81,7 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
       try {
         const token = getToken();
         if (!token) {
-          console.warn("No se encontró token de autenticación para cargar cuentas de origen.");
+          console.warn("No se encontró token de autenticación.");
           return;
         }
 
@@ -67,10 +92,10 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
         });
 
         const filteredAccounts = response.data
-          .filter(cuenta => cuenta.numero < 100)
-          .map(cuenta => ({
+          .filter((cuenta) => cuenta.numero < 100)
+          .map((cuenta) => ({
             numero: cuenta.numero.toString(),
-            nombreUsuario: cuenta.usuario?.nombre || `Cuenta ${cuenta.numero}`
+            nombreUsuario: cuenta.usuario?.nombre || `Cuenta ${cuenta.numero}`,
           }));
 
         setCuentasOrigenDisponibles(filteredAccounts);
@@ -94,7 +119,7 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
     }
 
     if (!cuentaDestino || !cuentaDestino.numero) {
-      setMensaje("No se pudo obtener la cuenta de destino para el depósito.");
+      setMensaje("No se pudo obtener la cuenta de destino.");
       return;
     }
 
@@ -109,7 +134,7 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
 
     const token = getToken();
     if (!token) {
-      setMensaje("No se encontró token de autenticación. Por favor, inicie sesión nuevamente.");
+      setMensaje("No se encontró token. Inicie sesión nuevamente.");
       navigate("/");
       return;
     }
@@ -123,14 +148,17 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
 
       await refetchUser();
 
-      const cuentaOrigenSeleccionada = cuentasOrigenDisponibles.find(c => c.numero === metodo);
-      const nombreOrigenMostrar = cuentaOrigenSeleccionada ? cuentaOrigenSeleccionada.nombreUsuario : `Cuenta ${metodo}`;
+      const cuentaOrigenSeleccionada = cuentasOrigenDisponibles.find((c) => c.numero === metodo);
+      const nombreOrigenMostrar = cuentaOrigenSeleccionada
+        ? cuentaOrigenSeleccionada.nombreUsuario
+        : `Cuenta ${metodo}`;
 
-      setDialogMessage(`Depósito de ${formatCurrency(montoDeposito)} realizado con éxito desde ${nombreOrigenMostrar}.`);
+      setDialogMessage(
+        `Depósito de ${formatCurrency(montoDeposito)} realizado con éxito desde ${nombreOrigenMostrar}.`
+      );
       setDialogIcon(<CheckCircle sx={{ color: "green", fontSize: 50 }} />);
       setOpenDialog(true);
 
-      // Resetear campos del formulario
       setMonto("");
       setMetodo("");
       setMensaje("");
@@ -139,24 +167,22 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
         setOpenDialog(false);
         navigate("/home", { state: { refreshUser: true } });
       }, 1500);
-
     } catch (apiError) {
       console.error("Error al depositar:", apiError);
       if (apiError.response) {
-        if (apiError.response.status === 401 || apiError.response.status === 403) {
-          setMensaje("Acceso no autorizado para realizar el depósito.");
+        if ([401, 403].includes(apiError.response.status)) {
+          setMensaje("Acceso no autorizado.");
           navigate("/");
-        } else if (apiError.response.data && typeof apiError.response.data === 'string') {
+        } else if (typeof apiError.response.data === "string") {
           setMensaje(`Error: ${apiError.response.data}`);
-        } else if (apiError.response.data && apiError.response.data.errors) {
+        } else if (apiError.response.data?.errors) {
           const errorMessages = Object.values(apiError.response.data.errors).flat().join(". ");
           setMensaje(`Error: ${errorMessages}`);
-        }
-        else {
-          setMensaje("Error al procesar el depósito. Intente más tarde.");
+        } else {
+          setMensaje("Error al procesar el depósito.");
         }
       } else {
-        setMensaje("No se pudo conectar con el servidor. Verifique su conexión.");
+        setMensaje("No se pudo conectar con el servidor.");
       }
     }
   };
@@ -176,19 +202,20 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
         sx={{
           padding: 3,
           maxWidth: 800,
-          margin: 'auto',
-          border: '1.5px solid #1976d2',
-          backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+          margin: "auto",
+          border: "1.5px solid #1976d2",
+          backgroundColor: esAdmin ? "#FFD89B" : "#ffffff",
         }}
       >
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+          <Grid sx={{ display: "flex", alignItems: "center" }}>
             <Avatar
               sx={{
                 width: 56,
                 height: 56,
-                bgcolor: esAdmin ? 'error.main' : 'primary.main',
-              }}>
+                bgcolor: esAdmin ? "error.main" : "primary.main",
+              }}
+            >
               {user?.nombre?.charAt(0).toUpperCase() || "U"}
             </Avatar>
           </Grid>
@@ -201,19 +228,24 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
             </Typography>
           </Grid>
         </Grid>
-        <Paper elevation={2} sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}>
+
+        <Paper
+          elevation={2}
+          sx={{ padding: 3, marginBottom: 3, backgroundColor: "#f5f5f5" }}
+        >
           <Typography variant="h5" gutterBottom>
             Ingreso de dinero
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
             Seleccioná la cuenta de origen e ingresá un monto para la cuenta{" "}
-            <Typography component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
+            <Typography component="span" sx={{ fontWeight: "bold", fontStyle: "italic" }}>
               {cuentaDestino?.numero || ""}
             </Typography>
           </Typography>
         </Paper>
+
         <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 10.66px)", backgroundColor: "#f5f5f5" } }}>
             <FormControl fullWidth>
               <InputLabel id="select-metodo-label">Cuenta de Origen</InputLabel>
               <Select
@@ -224,13 +256,14 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
               >
                 {cuentasOrigenDisponibles.map((cuenta) => (
                   <MenuItem key={cuenta.numero} value={cuenta.numero}>
-                    {`${cuenta.nombreUsuario}`}
+                    {cuenta.nombreUsuario}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 10.66px)' } }}>
+
+          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 10.66px)", backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Monto a depositar"
               type="number"
@@ -241,6 +274,7 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
             />
           </Grid>
         </Grid>
+
         {mensaje && (
           <Typography color="error" sx={{ mt: 2 }}>
             {mensaje}
@@ -251,29 +285,46 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
             {error}
           </Typography>
         )}
+
         <Grid container spacing={2}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 8px)", backgroundColor: "#f5f5f5" } }}>
             <Button
               variant="outlined"
-              color="error"
               fullWidth
               onClick={() => navigate(-1)}
+              sx={{
+                color: "#d32f2f",
+                borderColor: "#d32f2f",
+                "&:hover": {
+                  backgroundColor: "#ffebee",
+                  borderColor: "#b71c1c",
+                },
+              }}
             >
               Cancelar
             </Button>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+
+          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 8px)", backgroundColor: "#0f80cc" } }}>
             <Button
               variant="contained"
               fullWidth
               onClick={handleDepositar}
               disabled={!monto || parseFloat(monto) <= 0 || !metodo}
+              sx={{
+                color: "#ffffff",
+                backgroundColor: "#0f80cc",
+                "&:hover": {
+                  backgroundColor: "#0c6bab",
+                },
+              }}
             >
               Ingresar
             </Button>
           </Grid>
         </Grid>
       </Paper>
+
       <SuccessDialog
         open={openDialog}
         handleClose={() => setOpenDialog(false)}

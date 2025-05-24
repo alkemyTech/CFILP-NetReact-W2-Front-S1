@@ -112,12 +112,7 @@ const Perfil = () => {
                 </ListItemIcon>
                 <ListItemText primary="Número de Cuenta" secondary={cuentaPrincipal.numero} />
               </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <AttachMoneyIcon />
-                </ListItemIcon>
-                <ListItemText primary="Saldo Actual" secondary={formatCurrency(cuentaPrincipal.saldo)} />
-              </ListItem>
+              
             </List>
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
