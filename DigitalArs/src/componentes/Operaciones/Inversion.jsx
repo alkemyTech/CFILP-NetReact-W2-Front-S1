@@ -214,7 +214,7 @@ const Inversion = () => {
         </Paper>
         {/* Fila 1: Importe, Plazo y TNA */}
         <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Importe"
               type="number"
@@ -230,7 +230,7 @@ const Inversion = () => {
               }
             />
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <FormControl fullWidth>
               <InputLabel id="dias-label">Plazo</InputLabel>
               <Select
@@ -247,7 +247,7 @@ const Inversion = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Tasa Nominal Anual (TNA)"
               type="text"
@@ -269,12 +269,12 @@ const Inversion = () => {
         )}
         {/* Fila 2: Botones Cancelar y Invertir */}
         <Grid container spacing={2}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
             <Button variant="outlined" color="error" fullWidth onClick={() => navigate("/home")}>
               Cancelar
             </Button>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#0f80cc" } }}>
             <Button
               variant="contained"
               fullWidth

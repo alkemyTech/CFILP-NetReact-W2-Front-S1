@@ -14,9 +14,9 @@ import Usuarios from './componentes/Administrador/Usuarios';
 import CrearUsuario from './componentes/Administrador/Usuario/CrearUsuario';
 import EditarUsuario from './componentes/Administrador/Usuario/EditarUsuario';
 import Cuentas from './componentes/Administrador/Cuentas';
+import CrearCuenta from './componentes/Administrador/Cuenta/CrearCuenta';
+import EditarCuenta from './componentes/Administrador/Cuenta/EditarCuenta';
 import Transacciones from './componentes/Administrador/Transacciones';
-import CrearCuenta from './componentes/Administrador/Usuario/CrearCuenta';
-import EditarCuenta from './componentes/Administrador/Usuario/EditarCuenta';
 
 function App() {
   return (
@@ -82,14 +82,6 @@ function App() {
               }
             />
             <Route
-              path="/CrearCuenta"
-              element={
-                <PrivateRoute>
-                  <CrearCuenta />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/editarUsuario/:dni"
               element={
                 <PrivateRoute>
@@ -98,18 +90,26 @@ function App() {
               }
             />
             <Route
-              path="/EditarCuenta/:id"
-              element={
-                <PrivateRoute>
-                  <EditarCuenta />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/cuentas"
               element={
                 <PrivateRoute>
                   <Cuentas />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/CrearCuenta"
+              element={
+                <PrivateRoute>
+                  <CrearCuenta />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/EditarCuenta/:numero"
+              element={
+                <PrivateRoute>
+                  <EditarCuenta />
                 </PrivateRoute>
               }
             />

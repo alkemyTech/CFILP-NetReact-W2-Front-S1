@@ -227,7 +227,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
         </Paper>
         {/* Fila 1: Cuenta Origen y Monto a transferir */}
         <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Cuenta Origen"
               value={cuentaOrigen?.numero ?? ""}
@@ -235,7 +235,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               InputProps={{ readOnly: true }}
             />
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Monto a transferir"
               type="number"
@@ -249,7 +249,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
 
         {/* Fila 2: Cuenta Destino, DNI y Nombre Completo */}
         <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <FormControl fullWidth>
               <InputLabel id="select-cuenta-destino-label">Cuenta Destino</InputLabel>
               <Select
@@ -266,7 +266,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="DNI"
               value={datosUsuarioDestino.dni}
@@ -274,7 +274,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               InputProps={{ readOnly: true }}
             />
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(33.33% - 10.66px)', backgroundColor: "#f5f5f5" } }}>
             <TextField
               label="Nombre Completo"
               value={`${datosUsuarioDestino.nombre} ${datosUsuarioDestino.apellido}`.trim()}
@@ -290,19 +290,24 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
         )}
         {/* Fila 3: Botones Cancelar y Transferir */}
         <Grid container spacing={2}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
             <Button
               variant="outlined"
-              color="error"
               fullWidth
-              onClick={() => {
-                navigate(-1);
+              onClick={() => navigate(-1)}
+              sx={{
+                color: "#d32f2f",
+                borderColor: "#d32f2f",
+                "&:hover": {
+                  backgroundColor: "#ffebee",
+                  borderColor: "#b71c1c",
+                },
               }}
             >
               Cancelar
             </Button>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#0f80cc" } }}>
             <Button
               variant="contained"
               fullWidth

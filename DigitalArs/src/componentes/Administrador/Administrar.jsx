@@ -92,7 +92,6 @@ const Administrar = () => {
             </Grid>
             <Grid sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{nombreCompleto}</Typography>
-              <Typography variant="subtitle1" color="text.secondary">{email}</Typography>
               <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
                 {roleNames.length > 0 ? roleNames.join(', ') : 'Sin roles'}
               </Typography>

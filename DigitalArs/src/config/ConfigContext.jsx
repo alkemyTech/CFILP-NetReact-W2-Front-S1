@@ -55,6 +55,14 @@ export const ConfigProvider = ({ children }) => {
 
   // Objeto que contendrá todos los componentes de Material-UI centralizados
   const MuiComponents = {
+    Paper,
+    Typography,
+    TextField,
+    Button,
+    Avatar,
+    MenuItem,
+    FormControl,
+    InputLabel,
     Box,
     Button,
     Grid,
