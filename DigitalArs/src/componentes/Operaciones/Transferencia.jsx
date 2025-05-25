@@ -293,24 +293,39 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
         )}
         {/* Fila 3: Botones Cancelar y Transferir */}
         <Grid container spacing={2}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
+          <Grid
+            sx={{
+              width: { xs: '100%', sm: 'calc(50% - 8px)' },
+              backgroundColor: "#f5f5f5",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',   // Redondeo para consistencia
+            }}
+          >
             <Button
               variant="outlined"
+              color="error"
               fullWidth
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/home")}
               sx={{
-                color: "#d32f2f",
-                borderColor: "#d32f2f",
-                "&:hover": {
-                  backgroundColor: "#ffebee",
-                  borderColor: "#b71c1c",
-                },
+                border: '1px solid #d32f2f', // mismo color que "error"
+                borderRadius: '8px',
+                height: '100%',
+                textTransform: 'none',       // texto sin mayúsculas automáticas
               }}
             >
               Cancelar
             </Button>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#0f80cc" } }}>
+          <Grid sx={{
+            width: { xs: '100%', sm: 'calc(50% - 8px)' },
+            backgroundColor: "#f5f5f5",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '8px',
+          }}>
             <Button
               variant="contained"
               fullWidth
@@ -318,6 +333,23 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
               disabled={
                 !monto || monto <= 0 || !cvuDestino || cvuDestino === cuentaOrigen?.numero
               }
+              sx={{
+                border: '1px solid #2e7d32',
+                color: "#2e7d32",        // texto verde
+                borderColor: "#2e7d32",  // borde verde
+                backgroundColor: "#ffffff", // fondo blanco
+                height: '100%',
+                textTransform: 'none',
+                "&:hover": {
+                  backgroundColor: "#e8f5e9",
+                  borderColor: "#2e7d32",
+                },
+                "&.Mui-disabled": {
+                  color: "#878787",
+                  borderColor: "#cfcfcf",
+                  backgroundColor: "#ffffff",
+                },
+              }}
             >
               Transferir
             </Button>

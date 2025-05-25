@@ -311,17 +311,20 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
               onClick={handleDepositar}
               disabled={!monto || parseFloat(monto) <= 0 || !metodo}
               sx={{
-                color: "#2e7d32", // Color texto normal
-                borderColor: "#2e7d32", // Borde verde normal
-                backgroundColor: "#ffffff",
+                border: '1px solid #2e7d32',
+                color: "#2e7d32",        // texto verde
+                borderColor: "#2e7d32",  // borde verde
+                backgroundColor: "#ffffff", // fondo blanco
+                height: '100%',
+                textTransform: 'none',
                 "&:hover": {
                   backgroundColor: "#e8f5e9",
                   borderColor: "#1b5e20",
                 },
                 "&.Mui-disabled": {
-                  color: "#878787",           // Color de texto cuando está deshabilitado
-                  borderColor: "#cfcfcf",     // Borde cuando está deshabilitado
-                  backgroundColor: "#f9f9f9", // Fondo cuando está deshabilitado
+                  color: "#878787",
+                  borderColor: "#cfcfcf",
+                  backgroundColor: "#ffffff",
                 },
               }}
             >
