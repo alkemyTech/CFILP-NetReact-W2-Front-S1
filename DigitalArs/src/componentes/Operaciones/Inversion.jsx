@@ -286,7 +286,7 @@ const Inversion = () => {
               fullWidth
               onClick={() => navigate("/home")}
               sx={{
-                border: '2px solid #d32f2f', // mismo color que "error"
+                border: '1px solid #d32f2f', // mismo color que "error"
                 borderRadius: '8px',
                 height: '100%',
                 textTransform: 'none',       // texto sin mayúsculas automáticas
