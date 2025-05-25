@@ -200,7 +200,7 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
       >
         {/* Encabezado con Avatar y Títulos */}
         <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+          <Grid sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               sx={{
                 width: 56,
@@ -258,11 +258,14 @@ const Transferencia = ({ saldo: propSaldo, setSaldo }) => {
                 label="Cuenta destino"
                 onChange={(e) => setCvuDestino(e.target.value)}
               >
-                {cuentas.map((cuenta) => (
-                  <MenuItem key={cuenta.numero} value={cuenta.numero}>
-                    {cuenta.numero}
-                  </MenuItem>
-                ))}
+                {cuentas
+                  .filter((cuenta) => cuenta.numero > 100)
+                  .map((cuenta) => (
+                    <MenuItem key={cuenta.numero} value={cuenta.numero}>
+                      {cuenta.numero}
+                    </MenuItem>
+                  ))}
+
               </Select>
             </FormControl>
           </Grid>

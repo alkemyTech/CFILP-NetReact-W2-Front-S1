@@ -1,13 +1,13 @@
-import React, { useMemo, useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../servicios/AuthContext';
 import { ConfigContext } from '../../../config/ConfigContext';
 
 const EditarCuenta = () => {
+    const { numero } = useParams();
     const navigate = useNavigate();
-    const { id } = useParams(); // ID de la cuenta a editar
     const { user } = useContext(AuthContext);
     const { MuiComponents, api, commonFunctions } = useContext(ConfigContext);
     const {
@@ -19,18 +19,23 @@ const EditarCuenta = () => {
     const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
 
     const [formData, setFormData] = useState({
+        id: '',
         numero: '',
         dni: '',
-        nombreCompletoUsuario: ''
+        nombreCompleto: ''
     });
+
     const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
     const titulo = "Editar Cuenta";
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
+            setError('');
             try {
                 const token = commonFunctions.getToken();
                 if (!token) {
@@ -39,49 +44,38 @@ const EditarCuenta = () => {
                     return;
                 }
 
-                // Obtener usuarios
-                const usuariosResponse = await api.get('/Usuario', {
+                const responseUsuarios = await api.get('/Usuario', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                const filtrados = usuariosResponse.data.filter(user => user.dni > 100);
-                setUsuarios(filtrados);
+                const usuariosFiltrados = responseUsuarios.data.filter(u => u.dni > 100);
+                setUsuarios(usuariosFiltrados);
 
-                // Obtener cuenta actual
-                const cuentaResponse = await api.get(`/Cuenta/${id}`, {
+                const responseCuenta = await api.get(`/Cuenta/${numero}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                const cuenta = cuentaResponse.data;
+                const cuenta = responseCuenta.data;
 
-                const usuarioSeleccionado = filtrados.find(u => u.dni === cuenta.dni);
+                const usuarioAsociado = usuariosFiltrados.find(u => u.dni === cuenta.dni);
+
                 setFormData({
+                    id: cuenta.id || '',
                     numero: cuenta.numero.toString(),
-                    dni: cuenta.dni?.toString() || '',
-                    nombreCompletoUsuario: usuarioSeleccionado
-                        ? `${usuarioSeleccionado.nombre} ${usuarioSeleccionado.apellido || ''}`.trim()
+                    dni: cuenta.dni ? cuenta.dni.toString() : '',
+                    nombreCompleto: usuarioAsociado
+                        ? `${usuarioAsociado.nombre} ${usuarioAsociado.apellido || ''}`
                         : ''
                 });
+
             } catch (err) {
                 console.error("Error al cargar datos:", err.response?.data || err.message);
-                setError('Error al cargar datos para edición.');
+                setError('Error al cargar los datos de la cuenta o usuarios.');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchData();
-    }, [api, id, navigate, commonFunctions]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        if (validationErrors[name]) {
-            setValidationErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
+    }, [numero, api, navigate, commonFunctions]);
 
     const handleUsuarioChange = (e) => {
         const selectedDni = e.target.value;
@@ -90,24 +84,16 @@ const EditarCuenta = () => {
         setFormData(prev => ({
             ...prev,
             dni: selectedDni,
-            nombreCompletoUsuario: selectedUser ? `${selectedUser.nombre} ${selectedUser.apellido || ''}`.trim() : ''
+            nombreCompleto: selectedUser ? `${selectedUser.nombre} ${selectedUser.apellido || ''}` : ''
         }));
 
         if (validationErrors.dni) {
-            setValidationErrors(prev => ({
-                ...prev,
-                dni: ''
-            }));
+            setValidationErrors(prev => ({ ...prev, dni: '' }));
         }
     };
 
     const validateForm = () => {
         let errors = {};
-        if (!formData.numero) {
-            errors.numero = 'El número de cuenta es obligatorio.';
-        } else if (!/^\d+$/.test(formData.numero)) {
-            errors.numero = 'Debe contener solo números.';
-        }
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -127,33 +113,40 @@ const EditarCuenta = () => {
                 return;
             }
 
+            setSaving(true);
+
             const payload = {
+                id: formData.id,
                 numero: parseInt(formData.numero, 10),
                 dni: formData.dni ? parseInt(formData.dni, 10) : null
             };
 
-            setLoading(true);
-
-            await api.put(`/Cuenta/${id}`, payload, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            await api.put(`/Cuenta/${numero}`, payload, {
+                headers: { Authorization: `Bearer ${token}` }
             });
 
-            alert('Cuenta actualizada exitosamente!');
+            alert('Cuenta actualizada correctamente!');
             navigate('/cuentas');
         } catch (err) {
-            console.error("Error al editar cuenta:", err.response?.data || err.message);
-            if (err.response?.status === 400 && err.response.data?.errors) {
+            console.error("Error al actualizar cuenta:", err.response?.data || err.message);
+            if (err.response && err.response.status === 400 && err.response.data && err.response.data.errors) {
                 setValidationErrors(err.response.data.errors);
-                setError('Error de validación: Verifica los campos ingresados.');
+                setError('Error de validación: Por favor, revisa los campos.');
             } else {
-                setError(`Error inesperado: ${err.response?.data?.title || err.message}`);
+                setError(`Error al actualizar la cuenta: ${err.response?.data?.title || err.message || 'Verifica los datos o la conexión.'}`);
             }
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ padding: 3 }}>
@@ -161,20 +154,27 @@ const EditarCuenta = () => {
                 elevation={3}
                 sx={{
                     padding: 3,
-                    maxWidth: 800,
+                    maxWidth: 500,
                     margin: 'auto',
                     border: '1.5px solid #1976d2',
                     backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
                 }}
             >
                 <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-                    <Grid sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>{titulo.charAt(0)}</Avatar>
+                    <Grid item>
+                        <Avatar
+                            sx={{
+                                width: 56,
+                                height: 56,
+                                bgcolor: esAdmin ? 'error.main' : 'primary.main',
+                            }}>{titulo.charAt(0).toUpperCase() || '+'}</Avatar>
                     </Grid>
-                    <Grid xs>
-                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>{titulo}</Typography>
+                    <Grid item xs>
+                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                            {titulo}
+                        </Typography>
                         <Typography variant="subtitle2" color="text.secondary">
-                            Modifique los campos necesarios
+                            Modifique los datos de la cuenta
                         </Typography>
                     </Grid>
                 </Grid>
@@ -184,80 +184,78 @@ const EditarCuenta = () => {
                 )}
 
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid sx={{ width: '33%' }}>
+                    <Grid container direction="column" spacing={3}>
+
+                        {/* Número de cuenta (solo lectura) */}
+                        <Grid item>
                             <TextField
                                 fullWidth
                                 label="Número de Cuenta"
                                 name="numero"
                                 value={formData.numero}
-                                onChange={handleInputChange}
-                                error={!!validationErrors.numero}
-                                helperText={validationErrors.numero}
-                                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                InputProps={{ readOnly: true }}
+                                disabled
+                                sx={{ backgroundColor: '#f0f0f0' }}
                             />
                         </Grid>
 
-                        <Grid sx={{ width: '33%' }}>
+                        {/* Selección de DNI */}
+                        <Grid item>
                             <FormControl fullWidth error={!!validationErrors.dni}>
-                                <InputLabel id="dni-label">DNI Asociado (Opcional)</InputLabel>
+                                <InputLabel id="dni-label">Seleccionar DNI (Opcional)</InputLabel>
                                 <Select
                                     labelId="dni-label"
                                     name="dni"
                                     value={formData.dni}
-                                    label="DNI Asociado (Opcional)"
+                                    label="Seleccionar DNI (Opcional)"
                                     onChange={handleUsuarioChange}
+                                    sx={{ backgroundColor: '#fff' }}
                                 >
                                     <MenuItem value="">
-                                        <em>Ninguno</em>
+                                        <em>Ninguno (Cuenta sin usuario)</em>
                                     </MenuItem>
-                                    {usuarios.map(usuario => (
+                                    {usuarios.map((usuario) => (
                                         <MenuItem key={usuario.dni} value={usuario.dni.toString()}>
                                             {usuario.dni}
                                         </MenuItem>
                                     ))}
                                 </Select>
                                 {validationErrors.dni && (
-                                    <Typography color="error" variant="caption">{validationErrors.dni}</Typography>
+                                    <Typography variant="caption" color="error">{validationErrors.dni}</Typography>
                                 )}
                             </FormControl>
                         </Grid>
 
-                        <Grid sx={{ width: '33%' }}>
+                        {/* Nombre completo del usuario asociado (solo lectura) */}
+                        <Grid item>
                             <TextField
                                 fullWidth
-                                label="Nombre del Usuario"
-                                name="nombreCompletoUsuario"
-                                value={formData.nombreCompletoUsuario}
+                                label="Nombre Completo"
+                                value={formData.nombreCompleto}
                                 InputProps={{ readOnly: true }}
-                                disabled={!formData.dni}
+                                disabled
+                                sx={{ backgroundColor: '#f5f5f5' }}
                             />
                         </Grid>
-                    </Grid>
 
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
-                        <Grid sx={{ width: '50%' }}>
+                        {/* Botones */}
+                        <Grid item sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button
+                                color="primary"
                                 variant="outlined"
-                                color="secondary"
+                                onClick={() => navigate('/cuentas')}
                                 startIcon={<ArrowBackIcon />}
-                                onClick={() => navigate(-1)}
-                                disabled={loading}
-                                fullWidth
+                                disabled={saving}
                             >
-                                Cancelar
+                                Volver
                             </Button>
-                        </Grid>
-                        <Grid sx={{ width: '50%' }}>
                             <Button
                                 type="submit"
                                 variant="contained"
-                                color="primary"
                                 startIcon={<SaveIcon />}
-                                disabled={loading}
-                                fullWidth
+                                disabled={saving}
                             >
-                                {loading ? <CircularProgress size={24} /> : 'Guardar Cambios'}
+                                {saving ? 'Guardando...' : 'Guardar'}
                             </Button>
                         </Grid>
                     </Grid>

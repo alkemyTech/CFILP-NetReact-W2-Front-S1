@@ -23,15 +23,15 @@ import {
   TableRow,
   IconButton,
   InputAdornment,
+  CircularProgress
 } from "@mui/material";
 
-// Importaciones de los íconos desde el paquete correcto: @mui/icons-material
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-// Si usas otros íconos en tu aplicación, impórtalos aquí también:
-// import OtherIcon from '@mui/icons-material/Other';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SaveIcon from '@mui/icons-material/Save';
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { AuthContext } from "../servicios/AuthContext";
@@ -53,7 +53,6 @@ export const ConfigProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Objeto que contendrá todos los componentes de Material-UI centralizados
   const MuiComponents = {
     Paper,
     Typography,
@@ -64,20 +63,12 @@ export const ConfigProvider = ({ children }) => {
     FormControl,
     InputLabel,
     Box,
-    Button,
     Grid,
-    Paper,
-    TextField,
-    Typography,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    MenuItem,
     Select,
-    InputLabel,
-    FormControl,
-    Avatar,
     Table,
     TableBody,
     TableCell,
@@ -86,28 +77,32 @@ export const ConfigProvider = ({ children }) => {
     TableRow,
     IconButton,
     InputAdornment,
+    CircularProgress,
     AccountCircle: AccountCircleIcon,
     Email: EmailIcon,
     CreditCard: CreditCardIcon,
     AttachMoney: AttachMoneyIcon,
+    ArrowBack: ArrowBackIcon,
+    Save: SaveIcon
   };
+
   const auth = { user };
   const router = { navigate, location };
+
   const api = axios.create({
     baseURL: "https://localhost:7097",
     headers: {
       'Content-Type': 'application/json',
     },
   });
+
   const commonFunctions = {
     getToken: () => localStorage.getItem('token'),
     formatCurrency: formatearARS,
   };
 
-  // Componente de diálogo de éxito (también consume MuiComponents)
   const SuccessDialog = ({ open, handleClose, message, icon }) => {
-    // Aquí desestructuras los componentes que necesitas del MuiComponents global
-    const { Dialog, DialogTitle, DialogContent, DialogActions, Typography } = MuiComponents;
+    const { Dialog, DialogTitle, DialogContent, Typography } = MuiComponents;
 
     return (
       <Dialog open={open} onClose={handleClose}>
@@ -125,12 +120,12 @@ export const ConfigProvider = ({ children }) => {
     <ThemeProvider theme={appTheme}>
       <ConfigContext.Provider
         value={{
-          MuiComponents, // Exportamos el objeto MuiComponents completo
+          MuiComponents,
           auth,
           router,
           api,
           commonFunctions,
-          SuccessDialog, // Exportamos el componente de diálogo de éxito
+          SuccessDialog
         }}
       >
         {children}

@@ -129,12 +129,11 @@ const CrearCuenta = () => {
         } catch (err) {
             console.error("Error al crear cuenta:", err.response?.data || err.message);
             if (err.response && err.response.status === 400 && err.response.data && err.response.data.errors) {
-            console.error("Detalles de validación del backend:", err.response.data.errors);
-            setValidationErrors(err.response.data.errors);
-            setError('Error de validación: Por favor, revisa los campos.');
-        } else {
-            setError(`Error al crear la cuenta: ${err.response?.data?.title || err.message || 'Verifica los datos o la conexión.'}`);
-        }
+                setValidationErrors(err.response.data.errors);
+                setError('Error de validación: Por favor, revisa los campos.');
+            } else {
+                setError(`Error al crear la cuenta: ${err.response?.data?.title || err.message || 'Verifica los datos o la conexión.'}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -153,7 +152,7 @@ const CrearCuenta = () => {
                 }}
             >
                 <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
-                    <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Grid item>
                         <Avatar
                             sx={{
                                 width: 56,
@@ -161,7 +160,7 @@ const CrearCuenta = () => {
                                 bgcolor: esAdmin ? 'error.main' : 'primary.main',
                             }}>{titulo.charAt(0).toUpperCase() || '+'}</Avatar>
                     </Grid>
-                    <Grid xs>
+                    <Grid item xs>
                         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                             {titulo}
                         </Typography>
@@ -176,8 +175,8 @@ const CrearCuenta = () => {
                 )}
 
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid sx={{ width: { xs: '100%', sm: 'calc(33% - 8px)', backgroundColor: "#f5f5f5" } }}>
+                    <Grid container direction="column" spacing={2}>
+                        <Grid item>
                             <TextField
                                 fullWidth
                                 label="Número de Cuenta"
@@ -188,10 +187,11 @@ const CrearCuenta = () => {
                                 helperText={validationErrors.numero}
                                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                                 autoComplete="numero"
+                                sx={{ backgroundColor: '#fff' }}
                             />
                         </Grid>
 
-                        <Grid sx={{ width: { xs: '100%', sm: 'calc(33% - 8px)', backgroundColor: "#f5f5f5" } }}>
+                        <Grid item>
                             <FormControl fullWidth error={!!validationErrors.dni}>
                                 <InputLabel id="dni-label">Seleccionar DNI (Opcional)</InputLabel>
                                 <Select
@@ -200,6 +200,7 @@ const CrearCuenta = () => {
                                     value={formData.dni}
                                     label="Seleccionar DNI (Opcional)"
                                     onChange={handleUsuarioChange}
+                                    sx={{ backgroundColor: '#fff' }}
                                 >
                                     <MenuItem value="">
                                         <em>Ninguno (Cuenta sin usuario)</em>
@@ -216,7 +217,7 @@ const CrearCuenta = () => {
                             </FormControl>
                         </Grid>
 
-                        <Grid sx={{ width: { xs: '100%', sm: 'calc(33% - 8px)', backgroundColor: "#f5f5f5" } }}>
+                        <Grid item>
                             <TextField
                                 fullWidth
                                 label="Nombre del Usuario"
@@ -225,11 +226,11 @@ const CrearCuenta = () => {
                                 InputProps={{ readOnly: true }}
                                 autoComplete="off"
                                 disabled={!formData.dni}
+                                sx={{ backgroundColor: '#fff' }}
                             />
                         </Grid>
-                    </Grid>
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
-                        <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
+
+                        <Grid item>
                             <Button
                                 variant="outlined"
                                 color="secondary"
@@ -237,11 +238,18 @@ const CrearCuenta = () => {
                                 onClick={() => navigate(-1)}
                                 disabled={loading}
                                 fullWidth
+                                sx={{
+                                    backgroundColor: '#fff',
+                                    color: 'red', // Aquí el texto rojo
+                                    '&:hover': {
+                                        backgroundColor: '#f0f0f0',
+                                    },
+                                }}
                             >
                                 Cancelar
                             </Button>
                         </Grid>
-                        <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#0f80cc" } }}>
+                        <Grid item>
                             <Button
                                 type="submit"
                                 variant="contained"

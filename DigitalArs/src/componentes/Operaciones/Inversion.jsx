@@ -269,14 +269,46 @@ const Inversion = () => {
         )}
         {/* Fila 2: Botones Cancelar y Invertir */}
         <Grid container spacing={2}>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
-            <Button variant="outlined" color="error" fullWidth onClick={() => navigate("/home")}>
+          {/* Botón Cancelar */}
+          <Grid
+            sx={{
+              width: { xs: '100%', sm: 'calc(50% - 8px)' },
+              backgroundColor: "#f5f5f5",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',   // Redondeo para consistencia
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              onClick={() => navigate("/home")}
+              sx={{
+                border: '2px solid #d32f2f', // mismo color que "error"
+                borderRadius: '8px',
+                height: '100%',
+                textTransform: 'none',       // texto sin mayúsculas automáticas
+              }}
+            >
               Cancelar
             </Button>
           </Grid>
-          <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#0f80cc" } }}>
+
+          {/* Botón Invertir */}
+          <Grid
+            sx={{
+              width: { xs: '100%', sm: 'calc(50% - 8px)' },
+              backgroundColor: "#f5f5f5",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',
+            }}
+          >
             <Button
-              variant="contained"
+              variant="outlined"        // Usamos outlined para borde y fondo blanco
               fullWidth
               onClick={handleInvertir}
               disabled={
@@ -286,11 +318,29 @@ const Inversion = () => {
                 !dias ||
                 isNaN(tna)
               }
+              sx={{
+                color: "#2e7d32",        // texto verde
+                borderColor: "#2e7d32",  // borde verde
+                backgroundColor: "#ffffff", // fondo blanco
+                height: '100%',
+                textTransform: 'none',
+                "&:hover": {
+                  backgroundColor: "#e8f5e9",
+                  borderColor: "#1b5e20",
+                },
+                "&.Mui-disabled": {
+                  color: "#878787",
+                  borderColor: "#cfcfcf",
+                  backgroundColor: "#ffffff",
+                },
+              }}
             >
               Invertir
             </Button>
           </Grid>
         </Grid>
+
+
       </Paper>
       <SuccessDialog
         open={openDialog}

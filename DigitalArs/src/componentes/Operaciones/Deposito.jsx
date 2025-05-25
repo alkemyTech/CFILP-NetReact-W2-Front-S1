@@ -304,23 +304,30 @@ const Deposito = ({ saldo: propSaldo, setSaldo }) => {
               Cancelar
             </Button>
           </Grid>
-
-          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 8px)", backgroundColor: "#0f80cc" } }}>
+          <Grid sx={{ width: { xs: "100%", sm: "calc(50% - 8px)", } }}>
             <Button
-              variant="contained"
+              variant="outlined"
               fullWidth
               onClick={handleDepositar}
               disabled={!monto || parseFloat(monto) <= 0 || !metodo}
               sx={{
-                color: "#ffffff",
-                backgroundColor: "#0f80cc",
+                color: "#2e7d32", // Color texto normal
+                borderColor: "#2e7d32", // Borde verde normal
+                backgroundColor: "#ffffff",
                 "&:hover": {
-                  backgroundColor: "#0c6bab",
+                  backgroundColor: "#e8f5e9",
+                  borderColor: "#1b5e20",
+                },
+                "&.Mui-disabled": {
+                  color: "#878787",           // Color de texto cuando está deshabilitado
+                  borderColor: "#cfcfcf",     // Borde cuando está deshabilitado
+                  backgroundColor: "#f9f9f9", // Fondo cuando está deshabilitado
                 },
               }}
             >
               Ingresar
             </Button>
+
           </Grid>
         </Grid>
       </Paper>
