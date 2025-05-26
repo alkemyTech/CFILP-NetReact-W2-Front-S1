@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useContext, useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -19,7 +19,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
-import { theme } from '../../../utils/theme'; // Asegúrate de que la ruta sea correcta
+import { theme } from '../../../utils/theme';
+import { AuthContext } from '../../../servicios/AuthContext';
 
 const CrearUsuario = () => {
   const navigate = useNavigate();
@@ -31,10 +32,14 @@ const CrearUsuario = () => {
     password: '',
     roles: [], // Para almacenar los IDs de los roles seleccionados
   });
+  const { user } = useContext(AuthContext);
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const titulo = "Crear Usuario";
 
   useEffect(() => {
     // Cargar roles disponibles al montar el componente
@@ -141,17 +146,33 @@ const CrearUsuario = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 600, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
-            <Grid gridColumn="span 1">
-              <Avatar sx={{ width: 56, height: 56 }}>+</Avatar> {/* Puedes usar un ícono de agregar usuario */}
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 3,
+            maxWidth: 800,
+            margin: 'auto',
+            border: '1.5px solid #1976d2',
+            backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+          }}
+        >
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                sx={{
+                  width: 56,
+                  height: 56,
+                  bgcolor: esAdmin ? 'error.main' : 'primary.main',
+                }}>
+                {titulo.charAt(0).toUpperCase() || 'CU'}
+              </Avatar>
             </Grid>
             <Grid gridColumn="span 11">
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Crear Nuevo Usuario
+                {titulo}
               </Typography>
               <Typography variant="subtitle2" color="text.secondary">
-                Ingresa los datos del nuevo usuario
+                Ingresa los datos para el nuevo usuario
               </Typography>
             </Grid>
           </Grid>
@@ -163,7 +184,7 @@ const CrearUsuario = () => {
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 1: DNI y Rol */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="DNI"
@@ -176,7 +197,7 @@ const CrearUsuario = () => {
                   autoComplete="dni"
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <FormControl fullWidth error={!!validationErrors.roles}>
                   <InputLabel id="roles-label">Roles</InputLabel>
                   <Select
@@ -201,7 +222,7 @@ const CrearUsuario = () => {
             </Grid>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 2: Nombre y Apellido */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Nombre"
@@ -213,7 +234,7 @@ const CrearUsuario = () => {
                   autoComplete="nombre"
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Apellido"
@@ -228,7 +249,7 @@ const CrearUsuario = () => {
             </Grid>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 3: Email y Contraseña */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -241,7 +262,7 @@ const CrearUsuario = () => {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Contraseña"
@@ -256,28 +277,51 @@ const CrearUsuario = () => {
               </Grid>
             </Grid>
             {/* Botones de acción */}
-            <Grid container spacing={2} columns={12}>
-              <Grid gridColumn="span 6">
+            <Grid container spacing={2}>
+              <Grid
+                sx={{
+                  width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                  backgroundColor: "#f5f5f5",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',   // Redondeo para consistencia
+                }}
+              >
                 <Button
                   variant="outlined"
-                  color="secondary"
-                  startIcon={<ArrowBackIcon />}
-                  onClick={() => navigate(-1)}
-                  disabled={loading}
+                  color="error"
+                  fullWidth
+                  onClick={() => navigate("/usuarios")}
+                  sx={{
+                    border: '1px solid #d32f2f',
+                    borderRadius: '8px',
+                    height: '100%',
+                    textTransform: 'none',
+                  }}
                 >
                   Cancelar
                 </Button>
               </Grid>
-              <Grid gridColumn="span 6"></Grid>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                startIcon={<SaveIcon />}
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Guardar Usuario'}
-              </Button>
+              <Grid sx={{
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                backgroundColor: "#f5f5f5",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+              }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                  disabled={loading}
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Guardar Usuario'}
+                </Button>
+              </Grid>
             </Grid>
           </Box>
         </Paper>

@@ -65,7 +65,7 @@ const Perfil = () => {
             </Avatar>
           </Grid>
           <Grid sx={{ flexGrow: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}> {nombreCompleto} </Typography>
+            <Typography variant="h5">{nombreCompleto}</Typography>
             <Typography variant="subtitle2" color="text.secondary" component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
               {roles}
             </Typography>

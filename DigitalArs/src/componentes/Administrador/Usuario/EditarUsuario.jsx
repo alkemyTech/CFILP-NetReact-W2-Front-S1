@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useContext, useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -20,6 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from '../../../utils/theme';
+import { AuthContext } from '../../../servicios/AuthContext';
 
 const EditarUsuario = () => {
   const navigate = useNavigate();
@@ -32,10 +33,14 @@ const EditarUsuario = () => {
     password: '',
     roles: [],
   });
+  const { user } = useContext(AuthContext);
+  const roleNames = useMemo(() => user?.roles?.map(rol => rol.nombre) ?? [], [user]);
+  const esAdmin = useMemo(() => roleNames.includes('Administrador'), [roleNames]);
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const titulo = "Editar Usuario";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,7 +152,7 @@ const EditarUsuario = () => {
         nombre: formData.nombre,
         apellido: formData.apellido,
         email: formData.email,
-        ...(formData.password && { password: formData.password }), 
+        ...(formData.password && { password: formData.password }),
         roles: rolesParaEnviar
       };
 
@@ -178,14 +183,30 @@ const EditarUsuario = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ padding: 3 }}>
-        <Paper elevation={3} sx={{ padding: 3, maxWidth: 600, margin: "auto" }}>
-          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
-            <Grid gridColumn="span 1">
-              <Avatar sx={{ width: 56, height: 56 }}>⚙️</Avatar> {/* Ícono de edición */}
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 3,
+            maxWidth: 800,
+            margin: 'auto',
+            border: '1.5px solid #1976d2',
+            backgroundColor: esAdmin ? '#FFD89B' : '#ffffff',
+          }}
+        >
+          <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                sx={{
+                  width: 56,
+                  height: 56,
+                  bgcolor: esAdmin ? 'error.main' : 'primary.main',
+                }}>
+                {titulo.charAt(0).toUpperCase() || 'EU'}
+              </Avatar>
             </Grid>
             <Grid gridColumn="span 11">
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                Editar Usuario
+                {titulo}
               </Typography>
               <Typography variant="subtitle2" color="text.secondary">
                 Modifica los datos del usuario existente
@@ -200,7 +221,7 @@ const EditarUsuario = () => {
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 1: DNI y Rol */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="DNI"
@@ -214,7 +235,7 @@ const EditarUsuario = () => {
                   disabled
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <FormControl fullWidth error={!!validationErrors.roles}>
                   <InputLabel id="roles-label">Roles</InputLabel>
                   <Select
@@ -239,7 +260,7 @@ const EditarUsuario = () => {
             </Grid>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 2: Nombre y Apellido */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Nombre"
@@ -251,7 +272,7 @@ const EditarUsuario = () => {
                   autoComplete="nombre"
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Apellido"
@@ -266,7 +287,7 @@ const EditarUsuario = () => {
             </Grid>
             <Grid container spacing={2} alignItems="center" sx={{ marginBottom: 3 }} columns={12}>
               {/* Fila 3: Email y Contraseña */}
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -279,7 +300,7 @@ const EditarUsuario = () => {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid gridColumn="span 6" sx={{ width: '100%' }}>
+              <Grid sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', backgroundColor: "#f5f5f5" } }}>
                 <TextField
                   fullWidth
                   label="Contraseña (dejar vacío para no cambiar)"
@@ -295,10 +316,20 @@ const EditarUsuario = () => {
             </Grid>
             {/* Botones de acción */}
             <Grid container spacing={2} columns={12}>
-              <Grid gridColumn="span 6">
+              <Grid
+                sx={{
+                  width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                  backgroundColor: "#f5f5f5",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',   // Redondeo para consistencia
+                }}
+              >
                 <Button
                   variant="outlined"
                   color="secondary"
+                  fullWidth
                   startIcon={<ArrowBackIcon />}
                   onClick={() => navigate('/usuarios')}
                   disabled={loading}
@@ -306,11 +337,19 @@ const EditarUsuario = () => {
                   Cancelar
                 </Button>
               </Grid>
-              <Grid gridColumn="span 6">
+              <Grid sx={{
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                backgroundColor: "#f5f5f5",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+              }}>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
+                  fullWidth
                   startIcon={<SaveIcon />}
                   disabled={loading}
                   sx={{ float: 'right' }}
