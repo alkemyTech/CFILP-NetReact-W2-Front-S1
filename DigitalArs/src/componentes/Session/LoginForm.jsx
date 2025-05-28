@@ -69,10 +69,12 @@ const LoginForm = () => {
       }}
     >
       <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 450, borderRadius: 2 }}>
-        <Typography variant="h2" component="h1" align="center">
+        <Typography
+          variant="h2" component="h1" align="center" sx={{ fontFamily: 'Montserrat, sans-serif' }}>
           ArsWallet
         </Typography>
-        <Typography variant="h6" component="h1" align="center" gutterBottom sx={{ fontStyle: 'italic' }}>
+
+        <Typography variant="h6" component="h1" align="center" gutterBottom sx={{ fontStyle: 'italic' , color: 'text.secondary' }}>
           Tu billetera virtual
         </Typography>
 
