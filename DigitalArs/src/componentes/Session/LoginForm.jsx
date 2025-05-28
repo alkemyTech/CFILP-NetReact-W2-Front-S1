@@ -69,8 +69,11 @@ const LoginForm = () => {
       }}
     >
       <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 450, borderRadius: 2 }}>
-        <Typography variant="h4" component="h1" align="center" gutterBottom>
-          Billetera Virtual
+        <Typography variant="h2" component="h1" align="center">
+          ArsWallet
+        </Typography>
+        <Typography variant="h6" component="h1" align="center" gutterBottom sx={{ fontStyle: 'italic' }}>
+          Tu billetera virtual
         </Typography>
 
         {error && (
